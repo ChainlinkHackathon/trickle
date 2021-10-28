@@ -68,3 +68,9 @@ ETHERSCAN_TOKEN = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 brownie run scripts/deploy.py --network kovan
 ```
+
+## Test wallets
+
+- Louell: `0x2d8005d7449Bc885c9a540E1d93F1a24DAA20854`
+
+- Chris: `0x8E3bd49e2625f43C83E9e42a806551bC090b8652`
