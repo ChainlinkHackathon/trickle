@@ -30,6 +30,11 @@ Install brownie python lib (recommend doing this in a virtual env)
 pip install brownie
 ```
 
+Install web3
+
+```bash
+pip install web3
+```
 
 ## Compile Contract to JSON
 
