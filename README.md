@@ -49,6 +49,11 @@ brownie compile
 brownie run deploy
 ```
 
+```bash
+ganache-cli --port 8545 --gasLimit 12000000 --accounts 10 --hardfork istanbul --mnemonic brownie
+
+```
+
 ## Environment Variables
 
 ```
