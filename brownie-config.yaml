@@ -8,7 +8,7 @@ networks:
     keyhash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4'
     fee: 100000000000000000
     jobId: '29fa9aa13bf1468788b7cc4a500a45b8'
-    update_interval: 60
+    update_interval: 5
     verify: False
   kovan:
     vrf_coordinator: '0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9'
@@ -20,12 +20,12 @@ networks:
     eth_usd_price_feed: '0x9326BFA02ADD2366b30bacB125260Af641031331'
     # Change to True if you have an Etherscan API key and want to verify
     verify: False
-    update_interval: 60
+    update_interval: 15
   ganache:
     keyhash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4'
     fee: 100000000000000000
     jobId: '29fa9aa13bf1468788b7cc4a500a45b8'
-    update_interval: 60
+    update_interval: 5
     verify: False
   rinkeby:
     vrf_coordinator: '0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B'
