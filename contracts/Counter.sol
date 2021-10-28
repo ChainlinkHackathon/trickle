@@ -29,5 +29,6 @@ contract Counter is KeeperCompatibleInterface {
         lastTimeStamp = block.timestamp;
         counter = counter + 1;
         performData;
+        // here we will make the payments or terminate the contract
     }
 }
