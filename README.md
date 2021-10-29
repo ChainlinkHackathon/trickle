@@ -1,4 +1,4 @@
-# Chainlink Hackatho Project
+# Chainlink Hackathon Project
 
 
 ## Install Project
@@ -6,19 +6,20 @@
 yarn install
 ```
 
-## Run smart contract tests
+## Smart Contracts
+### Run smart contract tests
 
 ```shell
 yarn hardhat test
 ```
 
-## Run local test network
+### Run local test network
 
 ```shell
 yarn hardhat node
 ```
 
-## Deploy to local testnetwork and check the upkeep function
+### Deploy to local testnetwork and check the upkeep function
 
 Compile and deploy contracts and updating addresses
 
@@ -31,4 +32,6 @@ Check the upkeep function
 ```shell
 yarn hardhat check-upkeep --network localhost
 ```
+
+## Frontend
 
