@@ -29,6 +29,6 @@ yarn hardhat run scripts/deployContracts.js --network localhost
 Check the upkeep function
 
 ```shell
-yarn hardhat check-upkeep
+yarn hardhat check-upkeep --network localhost
 ```
 
