@@ -3,13 +3,20 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { MoralisProvider } from "react-moralis";
+import { ChainId, DAppProvider} from '@usedapp/core'
+
+const config = {
+  readOnlyChainId: ChainId.Mainnet,
+  readOnlyUrls: {
+    [ChainId.Mainnet]: 'https://mainnet.infura.io/v3/62687d1a985d4508b2b7a24827551934',
+  },
+}
 
 ReactDOM.render(
   <React.StrictMode>
-    <MoralisProvider appId="bIE11Yy0j5Ix1bjysL1RdiznZ2o3iSeCnDTiXBJu" serverUrl="https://nces5ar5u4rg.usemoralis.com:2053/server">
+    <DAppProvider config={config}>
       <App />
-    </MoralisProvider>
+    </DAppProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );
