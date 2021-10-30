@@ -15,6 +15,10 @@
     "hardhat": "^2.6.7"
   },
   "dependencies": {
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
+    "@mui/icons-material": "^5.0.5",
+    "@mui/material": "^5.0.6",
     "@openzeppelin/contracts": "^4.3.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -23,6 +27,7 @@
     "@types/node": "^16.11.6",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
+    "@walletconnect/web3-provider": "^1.6.6",
     "moralis": "^0.0.111",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
