@@ -1,0 +1,146 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.6;
+
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+
+interface KeeperCompatibleInterface {
+    function checkUpkeep(bytes calldata checkData) external returns (bool upkeepNeeded, bytes memory performData);
+    function performUpkeep(bytes calldata performData) external;
+}
+
+contract SubscriptionPayment is KeeperCompatibleInterface {
+    uint public nextPlanId;
+    struct Plan {
+      address merchant;
+      address token;
+      uint amount;
+      uint frequency;
+    }
+    struct Subscription {
+      address subscriber;
+      uint start;
+      uint nextPayment;
+    }
+    mapping(uint => Plan) public plans;
+    mapping(address => mapping(uint => Subscription)) public subscriptions;
+
+    event PlanCreated(
+      address merchant,
+      uint planId,
+      uint date
+    );
+    event SubscriptionCreated(
+      address subscriber,
+      uint planId,
+      uint date
+    );
+    event SubscriptionCancelled(
+      address subscriber,
+      uint planId,
+      uint date
+    );
+    event PaymentSent(
+      address from,
+      address to,
+      uint amount,
+      uint planId,
+      uint date
+    );
+
+    uint public counter;    // Public counter variable
+
+    // Use an interval in seconds and a timestamp to slow execution of Upkeep
+    uint public immutable interval;
+    uint public lastTimeStamp;    
+    address public subscriber;
+
+    constructor(uint updateInterval) {
+      interval = updateInterval;
+      lastTimeStamp = block.timestamp;
+      counter = 0;
+    }
+
+    function createPlan(address token, uint amount, uint frequency) external {
+      require(token != address(0), 'address cannot be null address');
+      require(amount > 0, 'amount needs to be > 0');
+      require(frequency > 0, 'frequency needs to be > 0');
+      subscriber = msg.sender;
+
+      // plans[nextPlanId] = Plan(
+      //   msg.sender, 
+      //   token,
+      //   amount, 
+      //   frequency
+      // );
+      // nextPlanId++;
+    }
+
+    function subscribe(uint planId) external {
+      IERC20 token = IERC20(plans[planId].token);
+      Plan storage plan = plans[planId];
+      require(plan.merchant != address(0), 'this plan does not exist');
+
+      token.transferFrom(msg.sender, plan.merchant, plan.amount);  
+      emit PaymentSent(
+        msg.sender, 
+        plan.merchant, 
+        plan.amount, 
+        planId, 
+        block.timestamp
+      );
+
+      subscriptions[msg.sender][planId] = Subscription(
+        msg.sender, 
+        block.timestamp, 
+        block.timestamp + plan.frequency
+      );
+      emit SubscriptionCreated(msg.sender, planId, block.timestamp);
+    }
+
+    function cancel(uint planId) external payable {
+      Subscription storage subscription = subscriptions[msg.sender][planId];
+      require(
+        subscription.subscriber != address(0), 
+        'this subscription does not exist'
+      );
+      delete subscriptions[msg.sender][planId]; 
+      emit SubscriptionCancelled(msg.sender, planId, block.timestamp);
+    }
+
+    function pay(address subscriber, uint planId) external {
+      Subscription storage subscription = subscriptions[subscriber][planId];
+      Plan storage plan = plans[planId];
+      IERC20 token = IERC20(plan.token);
+      require(
+        subscription.subscriber != address(0), 
+        'this subscription does not exist'
+      );
+      require(
+        block.timestamp > subscription.nextPayment,
+        'not due yet'
+      );
+
+      token.transferFrom(subscriber, plan.merchant, plan.amount);  
+      emit PaymentSent(
+        subscriber,
+        plan.merchant, 
+        plan.amount, 
+        planId, 
+        block.timestamp
+      );
+      subscription.nextPayment = subscription.nextPayment + plan.frequency;
+    }
+
+    function checkUpkeep(bytes calldata checkData) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
+        performData = checkData;
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        lastTimeStamp = block.timestamp;
+        counter = counter + 1;
+        performData;
+        // here we will make the payments or terminate the contract
+    }
+
+}
