@@ -1,88 +1,34 @@
-# Chainlink Hackathon Project
+# Chainlink Hackatho Project
 
-## Requirements and
 
-Install solidity compiler
-
-Example:
-
-```bash
-yay -S solidity
+## Install Project
+```shell
+yarn install
 ```
 
-Install brownie:
+## Run smart contract tests
 
-```bash
-python3 -m pip install --user pipx
-
-pipx install eth-brownie
+```shell
+yarn hardhat test
 ```
 
-Install ganache (local blockchain)
+## Run local test network
 
-```bash
-npm i -g ganache-cli
+```shell
+yarn hardhat node
 ```
 
-Install brownie python lib (recommend doing this in a virtual env)
+## Deploy to local testnetwork and check the upkeep function
 
-```bash
-pip install brownie
+Compile and deploy contracts and updating addresses
+
+```shell
+yarn hardhat run scripts/deployContracts.js --network localhost
 ```
 
-Install web3
+Check the upkeep function
 
-```bash
-pip install web3
+```shell
+yarn hardhat check-upkeep --network localhost
 ```
-
-## Compile Contract to JSON
-
-```bash
-brownie compile
-```
-
-## Local deployment
-
-
-```bash
-brownie run deploy
-```
-
-```bash
-ganache-cli --port 8545 --gasLimit 12000000 --accounts 10 --hardfork istanbul --mnemonic brownie
-
-```
-
-## Environment Variables
-
-```
-touch .env
-```
-
-Add the following:
-
-```
-WEB3_INFURA_PROJECT_ID = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-PRIVATE_KEY = 0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-ETHERSCAN_TOKEN = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-```
-
-You will need to setup accounts with both infura and etherscan
-
-## Deploy to testnet
-
-```
-brownie run scripts/deploy.py --network kovan
-```
-
-## Test wallets
-
-- Louell: `0x2d8005d7449Bc885c9a540E1d93F1a24DAA20854`
-
-- Chris: `0x8E3bd49e2625f43C83E9e42a806551bC090b8652`
-
-## TODO
-
-- move contract code into separate directory and create anther dir for frontend code
 
