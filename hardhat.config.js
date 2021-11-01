@@ -1,5 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
+require('dotenv').config()
 const fs = require("fs");
+
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -10,6 +12,10 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     console.log(account.address);
   }
 });
+
+const NODE_URL = process.env.NODE_URL;
+const KOVAN_PRIVATE_KEY = process.env.KOVAN_PRIVATE_KEY;
+console.log(NODE_URL)
 
 task("check-upkeep", "Check upkeep function", async (_, { ethers }) => {
   const addressPath = "addresses/Counter.json";
@@ -39,9 +45,17 @@ task("check-upkeep", "Check upkeep function", async (_, { ethers }) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
   solidity: "0.8.4",
+  defaultNetwork: "kovan",
+  networks: {
+    kovan: {
+      url: `${NODE_URL}`,
+      accounts: [`${KOVAN_PRIVATE_KEY}`]
+    }
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test"
+  }
 };

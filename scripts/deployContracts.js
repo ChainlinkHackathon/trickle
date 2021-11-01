@@ -6,11 +6,9 @@
 const hre = require("hardhat");
 const fs = require("fs");
 
-const DEPLOYER_BALANCE = 1000;
 const UPDATE_INTERVAL = 10;
 
 const contractsToDeploy = [
-  { name: "MockToken", constructorArgs: [DEPLOYER_BALANCE] },
   { name: "Counter", constructorArgs: [UPDATE_INTERVAL] },
 ];
 
