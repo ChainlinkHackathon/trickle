@@ -13,8 +13,9 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-const NODE_URL = process.env.INFURA_API_KEY;
+const NODE_URL = process.env.NODE_URL;
 const KOVAN_PRIVATE_KEY = process.env.KOVAN_PRIVATE_KEY;
+console.log(NODE_URL)
 
 task("check-upkeep", "Check upkeep function", async (_, { ethers }) => {
   const addressPath = "addresses/Counter.json";
