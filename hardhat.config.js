@@ -49,8 +49,8 @@ module.exports = {
   defaultNetwork: "kovan",
   networks: {
     kovan: {
-      url: NODE_URL,
-      accounts: [KOVAN_PRIVATE_KEY]
+      url: `${NODE_URL}`,
+      accounts: [`${KOVAN_PRIVATE_KEY}`]
     }
   },
   paths: {
