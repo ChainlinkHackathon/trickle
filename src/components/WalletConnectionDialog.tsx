@@ -11,7 +11,7 @@ function WalletConnectionDialog() {
   return (
     <Dialog open={account == null}>
       <DialogTitle>Connect your wallet to use the app</DialogTitle>
-      <Button color="inherit" onClick={() => activateBrowserWallet()}>
+      <Button variant="contained" onClick={() => activateBrowserWallet()}>
         Connect Wallet
       </Button>
     </Dialog >
