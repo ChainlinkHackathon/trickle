@@ -13,6 +13,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import LoginButton from "./components/LoginButton"
 import { mainListItems } from './components/listItems';
+import WalletConnectionDialog from "./components/WalletConnectionDialog"
 
 const drawerWidth: number = 240;
 
@@ -123,6 +124,7 @@ function AppContent() {
           <Divider />
           <List>{mainListItems}</List>
         </Drawer>
+        <WalletConnectionDialog />
       </Box>
     </ThemeProvider>
   );
