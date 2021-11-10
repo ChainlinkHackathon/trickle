@@ -1,12 +1,12 @@
 {
-  "42": {
-    "Weth": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
-    "Counter": "0x97A5b378bd0C490b441Afe2a0EB7Ed01744302C7",
-    "TokenAllowances": "0xE6da4A27D04dA723fAb7Ddb92b1379cea1c2f237"
-  },
-  "31337": {
-    "Weth": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
-    "TokenAllowances": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "Counter": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-  }
+    "42": {
+        "Dai": "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa",
+        "Weth": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
+        "Counter": "0x97A5b378bd0C490b441Afe2a0EB7Ed01744302C7"
+    },
+    "31337": {
+        "Dai": "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa",
+        "Weth": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
+        "Counter": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    }
 }

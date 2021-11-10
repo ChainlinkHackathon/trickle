@@ -10,7 +10,6 @@ const UPDATE_INTERVAL = 10;
 
 const contractsToDeploy = [
     { name: "Counter", constructorArgs: [UPDATE_INTERVAL] },
-    { name: "TokenAllowances", constructorArgs: [] },
 ];
 
 async function deployContract({ name, constructorArgs }) {
