@@ -9,8 +9,6 @@ import { constants } from "ethers";
 import { Snackbar, Typography, makeStyles } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import networkMapping from "../chain-info/map.json";
-import brownieConfig from "../brownie-config-json.json";
-import helperConfig from "../helper-config.json";
 
 export type Token = {
     image: string;
