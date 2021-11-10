@@ -47,6 +47,12 @@ module.exports = {
     solidity: "0.8.4",
     defaultNetwork: "kovan",
     networks: {
+        localhost: {
+            forking: {
+                url: `${KOVAN_JSON_RPC_URL}`,
+            },
+            accounts: [`${KOVAN_PRIVATE_KEY}`],
+        },
         kovan: {
             url: `${KOVAN_JSON_RPC_URL}`,
             accounts: [`${KOVAN_PRIVATE_KEY}`],
