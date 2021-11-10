@@ -9,7 +9,6 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { Token } from '../Main'
-import { useStakeTokens } from '../../hooks'
 import { utils } from 'ethers'
 import Alert from '@material-ui/lab/Alert'
 import '../../App.css'
@@ -45,8 +44,6 @@ export const StakeForm = ({ token }: StakeFormProps) => {
 
   const classes = useStyles()
 
-  const { send: stakeTokensSend, state: stakeTokensState } =
-    useStakeTokens(tokenAddress)
 
   const formattedTokenBalance: number = tokenBalance
     ? parseFloat(formatUnits(tokenBalance, 18))
@@ -58,8 +55,6 @@ export const StakeForm = ({ token }: StakeFormProps) => {
   // }
 
   const handleStakeSubmit = () => {
-    const amountAsWei = utils.parseEther(amount.toString())
-    return stakeTokensSend(amountAsWei.toString(), interval.toString())
   }
 
   const [amount, setAmount] = useState<
@@ -102,7 +97,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
     }
   }, [notifications, showErc20ApprovalSuccess, showStakeTokensSuccess])
 
-  const isMining = stakeTokensState.status === 'Mining'
+  const isMining = true
 
   const hasZeroBalance = formattedTokenBalance === 0
   const hasZeroAmountSelected = parseFloat(amount.toString()) === 0
