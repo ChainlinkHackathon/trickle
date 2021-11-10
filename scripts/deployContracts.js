@@ -49,8 +49,9 @@ function saveAbi(name, interface) {
 }
 
 async function main() {
-    const promises = contractsToDeploy.map((contractData) => deployContract(contractData));
-    await Promise.all(promises);
+    for(const contractData of contractsToDeploy){
+        await deployContract(contractData);
+    }
 }
 
 main()
