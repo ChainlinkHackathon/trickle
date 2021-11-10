@@ -2,9 +2,8 @@
 /// <reference types="react-scripts" />
 import React, { useEffect, useState } from "react";
 import eth from "../eth.png";
-import dapp from "../dapp.png";
 import dai from "../dai.png";
-import { YourWallet } from "./yourWallet";
+import { Allowances } from "./allowances";
 import { useEthers } from "@usedapp/core";
 import { constants } from "ethers";
 import { Snackbar, Typography, makeStyles } from "@material-ui/core";
@@ -36,8 +35,10 @@ export const Main = () => {
     const classes = useStyles();
     const contractMapping = networkMapping[String(chainId)];
     // We need to pull the DAPP token address from the .json file written to by Brownie
-    const dappTokenAddress =
-        contractMapping?.DappToken ?? constants.AddressZero;
+    const daiAddress =
+        contractMapping?.Dai ?? constants.AddressZero;
+    const wethAddress =
+        contractMapping?.Weth ?? constants.AddressZero;
     // console.log(dappTokenAddress)
     /**
      * Our single central location to store info on support tokens.
@@ -48,9 +49,14 @@ export const Main = () => {
      */
     const supportedTokens: Array<Token> = [
         {
-            image: dapp,
-            address: dappTokenAddress,
-            name: "DAPP",
+            image: dai,
+            address: daiAddress,
+            name: "DAI",
+        },
+        {
+            image: eth,
+            address: wethAddress,
+            name: "WETH",
         },
     ];
 
@@ -91,7 +97,7 @@ export const Main = () => {
             >
                 Trickle
             </Typography>
-            <YourWallet supportedTokens={supportedTokens} />
+            <Allowances supportedTokens={supportedTokens} />
             <Snackbar
                 open={showNetworkError}
                 autoHideDuration={5000}

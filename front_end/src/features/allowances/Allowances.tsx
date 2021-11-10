@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import { useEthers } from "@usedapp/core"
-import { StakeForm } from "./StakeForm"
 import { Tab, makeStyles, Box } from "@material-ui/core"
 import { TabContext, TabList, TabPanel } from "@material-ui/lab"
 import {
@@ -9,7 +8,7 @@ import {
 import { Token } from "../Main"
 import { WalletBalance } from "./WalletBalance"
 
-interface YourWalletProps {
+interface AllowancesProps {
   supportedTokens: Array<Token>
 }
 
@@ -29,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-export const YourWallet = ({ supportedTokens }: YourWalletProps) => {
+export const Allowances = ({ supportedTokens }: AllowancesProps) => {
   // wtf is this? 
   // Reacts way of holding state between components 
   // Could do it without <number> 
@@ -72,9 +71,6 @@ export const YourWallet = ({ supportedTokens }: YourWalletProps) => {
                       <WalletBalance
                         token={supportedTokens[selectedTokenIndex]}
                       />
-                      {/* this is the same as */}
-                      {/* The chainlink_defi props passing */}
-                      <StakeForm token={supportedTokens[selectedTokenIndex]} />
                     </div>
                   </TabPanel>
                 )
