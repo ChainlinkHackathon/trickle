@@ -1,9 +1,9 @@
 {
     "42": {
-        "DappToken": "0xF58634f7AfC89Bbb59553A503085f86B088f2915",
-        "TokenFarm": "0xd0eaA00936a37b5Bcc35A354410F03359764646b"
+        "Weth": "0xd0a1e359811322d97991e03f863a0c30c2cf029c"
     },
     "31337": {
+        "Weth": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
         "TokenAllowances": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
         "Counter": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
     }

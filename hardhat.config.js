@@ -40,6 +40,29 @@ task("check-upkeep", "Check upkeep function", async (_, { ethers }) => {
     console.log("Here is the perform data", performData);
 });
 
+task("deposit-weth", "Wrap eth into Weth")
+    .addParam("amount", "Amount of ether to wrap")
+    .setAction(async (taskArgs, { ethers }) => {
+        const abiPath = "front_end/src/chain-info/Weth.json";
+        const abi = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+        const networkMappingPath = "front_end/src/chain-info/map.json";
+        const networkMapping = JSON.parse(fs.readFileSync(networkMappingPath, "utf8"));
+        const network = await ethers.provider.getNetwork();
+        const chainId = network.chainId;
+        console.log("Wrapping Eth on chain", chainId);
+        const address = networkMapping[chainId].Weth;
+        console.log("Wrapping Eth at address", address);
+        const wethContract = await ethers.getContractAt(abi, address);
+        await wethContract.deployed();
+        console.log("Weth is deployed");
+
+        const amountWei = ethers.utils.parseEther(taskArgs.amount);
+        const tx = await wethContract.deposit({value: amountWei});
+        const receipt = await tx.wait()
+        console.log(`${taskArgs.amount} Ether wrapped`);
+        console.log(receipt);
+    });
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -47,11 +70,10 @@ module.exports = {
     solidity: "0.8.4",
     defaultNetwork: "kovan",
     networks: {
-        localhost: {
+        hardhat: {
             forking: {
                 url: `${KOVAN_JSON_RPC_URL}`,
             },
-            accounts: [`${KOVAN_PRIVATE_KEY}`],
         },
         kovan: {
             url: `${KOVAN_JSON_RPC_URL}`,
