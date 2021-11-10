@@ -6,5 +6,9 @@
     "TokenFarm": [
       "0xd0eaA00936a37b5Bcc35A354410F03359764646b"
     ]
+  },
+  "31337": {
+    "TokenAllowances": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "Counter": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
   }
 }

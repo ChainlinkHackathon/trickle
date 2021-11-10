@@ -1,0 +1,3 @@
+[
+  "function getAllowance(address token) view returns (uint256)"
+]
