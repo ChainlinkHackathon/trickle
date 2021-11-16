@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useContractFunction, useEthers } from "@usedapp/core"
-import TokenFarm from "../chain-info/TokenFarm.json"
+import Counter from "../chain-info/TokenFarm.json"
 import Erc20 from "../chain-info/ERC20.json"
 import { utils, constants } from "ethers"
 import { Contract } from "@ethersproject/contracts"
@@ -16,8 +16,8 @@ import networkMapping from "../chain-info/map.json"
  */
 export const useStakeTokens = (tokenAddress: string) => {
   const { chainId } = useEthers()
-  const { abi } = TokenFarm
-  const tokenFarmContractAddress = chainId ? networkMapping[String(chainId)]["TokenFarm"][0] : constants.AddressZero
+  const { abi } = Counter
+  const tokenFarmContractAddress = chainId ? networkMapping[String(chainId)]["Counter"][0] : constants.AddressZero
 
   const tokenFarmInterface = new utils.Interface(abi)
 
@@ -27,8 +27,8 @@ export const useStakeTokens = (tokenAddress: string) => {
   )
 
   const { send: stakeTokensSend, state: stakeTokensState } =
-    useContractFunction(tokenFarmContract, "stakeTokens", {
-      transactionName: "Stake tokens",
+    useContractFunction(tokenFarmContract, "fundContract", {
+      transactionName: "Fund Contract",
     })
 
   const erc20Interface = new utils.Interface(Erc20.abi)
@@ -42,19 +42,24 @@ export const useStakeTokens = (tokenAddress: string) => {
 
   const [amountToStake, setAmountToStake] = useState("0")
 
+  const [dcaInterval, setDcaInterval] = useState("0")
+
   useEffect(() => {
     if (approveErc20State.status === "Success") {
-      stakeTokensSend(amountToStake, tokenAddress)
+      stakeTokensSend(amountToStake, dcaInterval, tokenAddress)
     }
     // the dependency arry
     // the code inside the useEffect anytime
     // anything in this list changes
     // if you want something to run when the component first runs
     // you just have a blank list
-  }, [approveErc20State, amountToStake, tokenAddress]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [approveErc20State, amountToStake, dcaInterval, tokenAddress]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const send = (amount: string, interval: string) => {
+  const send = (amount: string, dcaInterval: string) => {
     setAmountToStake(amount)
+    setDcaInterval(dcaInterval)
+    console.log("dcaInterval:", dcaInterval)
+    console.log("amount:", amount)
     return approveErc20Send(tokenFarmContractAddress, amount)
   }
 
