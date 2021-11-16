@@ -1,10 +1,14 @@
 {
   "42": {
+    "Counter": [
+      "0xE29dF6a221eC4Aa04e45c95Facb1E5e0748fd05B",
+      "0x34eE2Afe806B6c0C8C1F77eE710066E20BBF3926"
+    ],
     "DappToken": [
-      "0xF58634f7AfC89Bbb59553A503085f86B088f2915"
+      "0xB69c5385DD92DbC292523B52cCC10C266e2C2fa6"
     ],
     "TokenFarm": [
-      "0xd0eaA00936a37b5Bcc35A354410F03359764646b"
+      "0x6cBceb5788857937184A9C1808c8c94e0907339D"
     ]
   }
 }

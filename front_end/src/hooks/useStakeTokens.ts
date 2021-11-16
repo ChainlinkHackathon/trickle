@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useContractFunction, useEthers } from "@usedapp/core"
-import TokenFarm from "../chain-info/TokenFarm.json"
+import Counter from "../chain-info/Counter.json"
 import Erc20 from "../chain-info/ERC20.json"
 import { utils, constants } from "ethers"
 import { Contract } from "@ethersproject/contracts"
@@ -16,8 +16,8 @@ import networkMapping from "../chain-info/map.json"
  */
 export const useStakeTokens = (tokenAddress: string) => {
   const { chainId } = useEthers()
-  const { abi } = TokenFarm
-  const tokenFarmContractAddress = chainId ? networkMapping[String(chainId)]["TokenFarm"][0] : constants.AddressZero
+  const { abi } = Counter
+  const tokenFarmContractAddress = chainId ? networkMapping[String(chainId)]["Counter"][0] : constants.AddressZero
 
   const tokenFarmInterface = new utils.Interface(abi)
 
@@ -42,9 +42,11 @@ export const useStakeTokens = (tokenAddress: string) => {
 
   const [amountToStake, setAmountToStake] = useState("0")
 
+  const [interval, setInterval] = useState("0")
+
   useEffect(() => {
     if (approveErc20State.status === "Success") {
-      stakeTokensSend(amountToStake, tokenAddress)
+      stakeTokensSend(amountToStake, interval, tokenAddress)
     }
     // the dependency arry
     // the code inside the useEffect anytime
@@ -55,6 +57,7 @@ export const useStakeTokens = (tokenAddress: string) => {
 
   const send = (amount: string, interval: string) => {
     setAmountToStake(amount)
+    setInterval(interval)
     return approveErc20Send(tokenFarmContractAddress, amount)
   }
 

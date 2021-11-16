@@ -1,4 +1,4 @@
-from brownie import DappToken, TokenFarm, network, config
+from brownie import DappToken, TokenFarm, Counter, network, config
 from scripts.helpful_scripts import get_account, get_contract
 import shutil
 import os
@@ -7,6 +7,18 @@ import json
 from web3 import Web3
 
 KEPT_BALANCE = Web3.toWei(100, "ether")
+
+
+def deploy_counter(update_front_end_flag=False):
+    account = get_account()
+    counter = Counter.deploy(
+        30,
+        {"from": account},
+        publish_source=config["networks"][network.show_active()]["verify"],
+    )
+    if update_front_end_flag:
+        update_front_end()
+    return counter
 
 
 def deploy_token_farm_and_dapp_token(update_front_end_flag=False):
@@ -93,3 +105,5 @@ def copy_files_to_front_end(src, dest):
 
 def main():
     deploy_token_farm_and_dapp_token(update_front_end_flag=True)
+    deploy_counter(update_front_end_flag=True)
+
