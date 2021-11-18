@@ -45,8 +45,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
 
   const classes = useStyles()
 
-  const { send: stakeTokensSend, state: stakeTokensState } =
-    useStakeTokens(tokenAddress)
+  const { send: stakeTokensSend, state: stakeTokensState } = useStakeTokens()
 
   const formattedTokenBalance: number = tokenBalance
     ? parseFloat(formatUnits(tokenBalance, 18))
@@ -66,7 +65,8 @@ export const StakeForm = ({ token }: StakeFormProps) => {
     number | string | Array<number | string>
   >(0)
 
-  const [interval, setInterval] = useState< number | string | Array<number | string>
+  const [interval, setInterval] = useState<
+    number | string | Array<number | string>
   >(0)
 
   const [showErc20ApprovalSuccess, setShowErc20ApprovalSuccess] =
@@ -122,7 +122,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
       </div>
       <div className={classes.container}>
         <SliderInput
-          label={"DCA Interval"}
+          label={'DCA Interval'}
           // TODO: week by default add field to change this
           maxValue={2}
           id={`slider-input-${name}`}
@@ -136,14 +136,16 @@ export const StakeForm = ({ token }: StakeFormProps) => {
           variant='contained'
           size='large'
           onClick={handleStakeSubmit}
-          disabled={isMining || hasZeroAmountSelected}>
+          disabled={isMining || hasZeroAmountSelected}
+        >
           {isMining ? <CircularProgress size={26} /> : 'Fund'}
         </Button>
       </div>
       <Snackbar
         open={showErc20ApprovalSuccess}
         autoHideDuration={5000}
-        onClose={handleCloseSnack}>
+        onClose={handleCloseSnack}
+      >
         <Alert onClose={handleCloseSnack} severity='success'>
           ERC-20 token transfer approved successfully! Now approve the 2nd tx to
           initiate the staking transfer.
@@ -152,7 +154,8 @@ export const StakeForm = ({ token }: StakeFormProps) => {
       <Snackbar
         open={showStakeTokensSuccess}
         autoHideDuration={5000}
-        onClose={handleCloseSnack}>
+        onClose={handleCloseSnack}
+      >
         <Alert onClose={handleCloseSnack} severity='success'>
           Tokens staked successfully!
         </Alert>
