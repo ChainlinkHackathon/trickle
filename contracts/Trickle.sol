@@ -9,7 +9,7 @@ interface KeeperCompatibleInterface {
     function performUpkeep(bytes calldata performData) external;
 }
 
-contract Counter is KeeperCompatibleInterface {
+contract Trickle is KeeperCompatibleInterface {
     uint256 public counter; // Public counter variable
 
     // Use an interval in seconds and a timestamp to slow execution of Upkeep
@@ -24,19 +24,6 @@ contract Counter is KeeperCompatibleInterface {
         interval = updateInterval;
         lastTimeStamp = block.timestamp;
         counter = 0;
-    }
-
-    function tokenIsAllowed(address token) public returns (bool) {
-        for (
-            uint256 allowedTokensIndex = 0;
-            allowedTokensIndex < allowedTokens.length;
-            allowedTokensIndex++
-        ) {
-            if (allowedTokens[allowedTokensIndex] == token) {
-                return true;
-            }
-        }
-        return false;
     }
 
     function fundContract(

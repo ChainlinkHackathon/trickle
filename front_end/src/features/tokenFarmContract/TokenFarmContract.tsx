@@ -6,7 +6,6 @@ import {
 } from "../../components"
 import { Tab, Box, makeStyles } from "@material-ui/core"
 import { Token } from "../Main"
-import { Unstake } from "./Unstake"
 
 interface TokenFarmContractProps {
   supportedTokens: Array<Token>
@@ -63,13 +62,6 @@ export const TokenFarmContract = ({
                   )
                 })}
               </TabList>
-              {supportedTokens.map((token, index) => {
-                return (
-                  <TabPanel value={index.toString()} key={index}>
-                    <Unstake token={token} />
-                  </TabPanel>
-                )
-              })}
             </TabContext>
           ) : (
             <ConnectionRequiredMsg />

@@ -12,7 +12,7 @@ import { Token } from '../Main'
 import { useStakeTokens } from '../../hooks'
 import { utils } from 'ethers'
 import Alert from '@material-ui/lab/Alert'
-import '../../App.css'
+// import '../../App.css'
 
 // This is the typescript way of saying this compent needs this type
 export interface StakeFormProps {
@@ -50,11 +50,6 @@ export const StakeForm = ({ token }: StakeFormProps) => {
   const formattedTokenBalance: number = tokenBalance
     ? parseFloat(formatUnits(tokenBalance, 18))
     : 0
-
-  // const handleStakeSubmit = () => {
-  //   const amountAsWei = utils.parseEther(amount.toString())
-  //   return stakeTokensSend(amountAsWei.toString())
-  // }
 
   const handleStakeSubmit = () => {
     const amountAsWei = utils.parseEther(amount.toString())

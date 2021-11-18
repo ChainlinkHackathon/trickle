@@ -106,7 +106,7 @@ export const Main = () => {
         Trickle
       </Typography>
       <YourWallet supportedTokens={supportedTokens} />
-      <TokenFarmContract supportedTokens={supportedTokens} />
+      {/* <TokenFarmContract supportedTokens={supportedTokens} /> */}
       <Snackbar
         open={showNetworkError}
         autoHideDuration={5000}

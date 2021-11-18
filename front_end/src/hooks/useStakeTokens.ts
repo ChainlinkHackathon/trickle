@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useContractFunction, useEthers } from '@usedapp/core'
-import Trickle from '../chain-info/Counter.json'
+import Trickle from '../chain-info/Trickle.json'
 import { utils, constants } from 'ethers'
 import { Contract } from '@ethersproject/contracts'
 import networkMapping from '../chain-info/map.json'
@@ -9,7 +9,7 @@ export const useStakeTokens = () => {
   const { chainId } = useEthers()
   const { abi } = Trickle
   const tokenFarmContractAddress = chainId
-    ? networkMapping[String(chainId)]['Counter'][0]
+    ? networkMapping[String(chainId)]['Trickle'][0]
     : constants.AddressZero
 
   const tokenFarmInterface = new utils.Interface(abi)
