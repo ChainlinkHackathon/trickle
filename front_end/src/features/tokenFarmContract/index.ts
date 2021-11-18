@@ -1,1 +1,1 @@
-export { TokenFarmContract } from "./TokenFarmContract"
+export { TrickleContract } from "./TrickleContract"

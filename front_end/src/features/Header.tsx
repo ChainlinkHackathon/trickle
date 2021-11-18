@@ -1,12 +1,12 @@
-import { Button, makeStyles } from "@material-ui/core"
-import { useEthers } from "@usedapp/core"
+import { Button, makeStyles } from '@material-ui/core'
+import { useEthers } from '@usedapp/core'
 
 const useStyles = makeStyles((theme) => ({
   container: {
     padding: theme.spacing(4),
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: theme.spacing(1)
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: theme.spacing(1),
   },
 }))
 
@@ -21,17 +21,17 @@ export const Header = () => {
     <div className={classes.container}>
       {isConnected ? (
         <>
-          <Button color="primary" variant="contained">
+          <Button color='primary' variant='contained'>
             {`${account?.slice(0, 4)}...${account?.slice(-3)}`}
           </Button>
-          <Button variant="contained" onClick={deactivate}>
+          <Button variant='contained' onClick={deactivate}>
             Disconnect
           </Button>
         </>
       ) : (
         <Button
-          color="primary"
-          variant="contained"
+          color='primary'
+          variant='contained'
           onClick={() => activateBrowserWallet()}
         >
           Connect

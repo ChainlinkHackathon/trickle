@@ -1,13 +1,11 @@
-import React, { useState } from "react"
-import { useEthers } from "@usedapp/core"
-import { StakeForm } from "./StakeForm"
-import { Tab, makeStyles, Box } from "@material-ui/core"
-import { TabContext, TabList, TabPanel } from "@material-ui/lab"
-import {
-  ConnectionRequiredMsg
-} from "../../components"
-import { Token } from "../Main"
-import { WalletBalance } from "./WalletBalance"
+import React, { useState } from 'react'
+import { useEthers } from '@usedapp/core'
+import { StakeForm } from './StakeForm'
+import { Tab, makeStyles, Box } from '@material-ui/core'
+import { TabContext, TabList, TabPanel } from '@material-ui/lab'
+import { ConnectionRequiredMsg } from '../../components'
+import { Token } from '../Main'
+import { WalletBalance } from './WalletBalance'
 
 interface YourWalletProps {
   supportedTokens: Array<Token>
@@ -15,26 +13,26 @@ interface YourWalletProps {
 
 const useStyles = makeStyles((theme) => ({
   tabContent: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     gap: theme.spacing(4),
   },
   box: {
-    backgroundColor: "white",
-    borderRadius: "25px",
+    backgroundColor: 'white',
+    borderRadius: '25px',
   },
   header: {
-    color: "white"
-  }
+    color: 'white',
+  },
 }))
 
 export const YourWallet = ({ supportedTokens }: YourWalletProps) => {
-  // wtf is this? 
-  // Reacts way of holding state between components 
-  // Could do it without <number> 
-  // saving state between renders of components 
-  // You'd have to pass it through as a prop to have another component use it 
+  // wtf is this?
+  // Reacts way of holding state between components
+  // Could do it without <number>
+  // saving state between renders of components
+  // You'd have to pass it through as a prop to have another component use it
   const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0)
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: string) => {
@@ -54,7 +52,7 @@ export const YourWallet = ({ supportedTokens }: YourWalletProps) => {
         <div>
           {isConnected ? (
             <TabContext value={selectedTokenIndex.toString()}>
-              <TabList onChange={handleChange} aria-label="stake form tabs">
+              <TabList onChange={handleChange} aria-label='stake form tabs'>
                 {supportedTokens.map((token, index) => {
                   return (
                     <Tab
