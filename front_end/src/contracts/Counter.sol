@@ -41,12 +41,9 @@ contract Counter is KeeperCompatibleInterface {
 
     function fundContract(
         uint256 _amount,
-        uint256 _dca_interval,
-        address token
+        uint256 _dca_interval
     ) public {
-        // Require amount greater than 0
         require(_amount > 0, "amount cannot be 0");
-        require(tokenIsAllowed(token), "Token currently isn't allowed");
         user_to_interval[msg.sender] = _dca_interval;
         user_to_amount[msg.sender] = _amount;
     }

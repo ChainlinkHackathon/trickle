@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useContractFunction, useEthers } from "@usedapp/core"
-import Counter from "../chain-info/TokenFarm.json"
+import Counter from "../chain-info/Counter.json"
 import Erc20 from "../chain-info/ERC20.json"
 import { utils, constants } from "ethers"
 import { Contract } from "@ethersproject/contracts"
@@ -46,8 +46,13 @@ export const useStakeTokens = (tokenAddress: string) => {
 
   useEffect(() => {
     if (approveErc20State.status === "Success") {
-      stakeTokensSend(amountToStake, dcaInterval, tokenAddress)
+      stakeTokensSend(amountToStake, dcaInterval)
     }
+    console.log("Counter Address:", tokenFarmContractAddress)
+    console.log("amount:", amountToStake)
+    console.log("dcaInterval: ", dcaInterval)
+    console.log("tokenAddress: ", tokenAddress)
+    console.log("state: ", approveErc20State)
     // the dependency arry
     // the code inside the useEffect anytime
     // anything in this list changes
@@ -55,10 +60,10 @@ export const useStakeTokens = (tokenAddress: string) => {
     // you just have a blank list
   }, [approveErc20State, amountToStake, dcaInterval, tokenAddress]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const send = (amount: string, dcaInterval: string) => {
+  const send = (amount: string, interval: string) => {
     setAmountToStake(amount)
-    setDcaInterval(dcaInterval)
-    console.log("dcaInterval:", dcaInterval)
+    setDcaInterval(interval)
+    console.log("dcaInterval:", interval)
     console.log("amount:", amount)
     return approveErc20Send(tokenFarmContractAddress, amount)
   }
