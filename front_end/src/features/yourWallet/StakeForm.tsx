@@ -108,7 +108,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
         <SliderInput
           label={`DCA Amount: ${name}`}
           maxValue={formattedTokenBalance}
-          id={`slider-input-${name}`}
+          id={`amount-slider-input-${name}`}
           className={classes.slider}
           value={amount}
           onChange={setAmount}
@@ -120,7 +120,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
           label={'DCA Interval'}
           // TODO: week by default add field to change this
           maxValue={30}
-          id={`slider-input-${name}`}
+          id={`interval-slider-input-${name}`}
           className={classes.slider}
           value={interval}
           onChange={setInterval}
