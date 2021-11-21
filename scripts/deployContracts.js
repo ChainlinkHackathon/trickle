@@ -9,40 +9,53 @@ const fs = require("fs");
 const UPDATE_INTERVAL = 10;
 
 const contractsToDeploy = [
-  { name: "Counter", constructorArgs: [UPDATE_INTERVAL] },
+    { name: "Counter", constructorArgs: [UPDATE_INTERVAL] },
 ];
 
 async function deployContract({ name, constructorArgs }) {
-  const contractFactory = await hre.ethers.getContractFactory(name);
-  const contractInstance = await contractFactory.deploy(...constructorArgs);
+    console.log("Getting Contract Factory");
+    const contractFactory = await hre.ethers.getContractFactory(name);
+    console.log(`Deploying contract ${name}`);
+    const contractInstance = await contractFactory.deploy(...constructorArgs);
 
-  await contractInstance.deployed();
-  await saveAddress(name, contractInstance.address);
+    await contractInstance.deployed();
+    console.log("Saving Address");
+    await saveAddress(name, contractInstance.address);
+    saveAbi(name, contractInstance.interface);
 
-  console.log(`${name} deployed to:`, contractInstance.address);
+    console.log(`${name} deployed to:`, contractInstance.address);
 }
 
 async function saveAddress(name, address) {
-  const addressPath = `addresses/${name}.json`;
-  let addresses = {};
-  const { chainId } = await ethers.provider.getNetwork();
-  if (fs.existsSync(addressPath))
-    addresses = JSON.parse(fs.readFileSync(addressPath, "utf8"));
+    const addressPath = `./front_end/src/chain-info/map.json`;
+    let addresses = {};
+    const { chainId } = await ethers.provider.getNetwork();
+    if (fs.existsSync(addressPath)) addresses = JSON.parse(fs.readFileSync(addressPath, "utf8"));
 
-  addresses[chainId] = address;
-  fs.writeFileSync(addressPath, JSON.stringify(addresses, null, 2));
+    if (addresses[chainId] == null) {
+        addresses[chainId] = {};
+    }
+
+    addresses[chainId][name] = address;
+    fs.writeFileSync(addressPath, JSON.stringify(addresses, null, 2));
+}
+
+function saveAbi(name, interface) {
+    const abiPath = `./front_end/src/chain-info/${name}.json`;
+    const FormatTypes = hre.ethers.utils.FormatTypes;
+    const abi = interface.format(FormatTypes.full);
+    fs.writeFileSync(abiPath, JSON.stringify(abi, null, 2));
 }
 
 async function main() {
-  const promises = contractsToDeploy.map((contractData) =>
-    deployContract(contractData)
-  );
-  await Promise.all(promises);
+    for(const contractData of contractsToDeploy){
+        await deployContract(contractData);
+    }
 }
 
 main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

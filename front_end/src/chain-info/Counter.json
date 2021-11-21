@@ -1,0 +1,8 @@
+[
+  "constructor(uint256 updateInterval)",
+  "function checkUpkeep(bytes checkData) view returns (bool upkeepNeeded, bytes performData)",
+  "function counter() view returns (uint256)",
+  "function interval() view returns (uint256)",
+  "function lastTimeStamp() view returns (uint256)",
+  "function performUpkeep(bytes performData)"
+]
