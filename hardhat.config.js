@@ -57,8 +57,8 @@ task("deposit-weth", "Wrap eth into Weth")
         console.log("Weth is deployed");
 
         const amountWei = ethers.utils.parseEther(taskArgs.amount);
-        const tx = await wethContract.deposit({value: amountWei});
-        const receipt = await tx.wait()
+        const tx = await wethContract.deposit({ value: amountWei });
+        const receipt = await tx.wait();
         console.log(`${taskArgs.amount} Ether wrapped`);
         console.log(receipt);
     });
@@ -68,7 +68,7 @@ task("deposit-weth", "Wrap eth into Weth")
 
 module.exports = {
     solidity: "0.8.4",
-    defaultNetwork: "kovan",
+    defaultNetwork: "hardhat",
     networks: {
         hardhat: {
             forking: {
@@ -84,4 +84,5 @@ module.exports = {
         sources: "./contracts",
         tests: "./test",
     },
+    mocha: { timeout: 50000 },
 };

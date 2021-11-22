@@ -18,19 +18,19 @@ contract ExchangeInterface is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IUniswapV2Router02 public uniswap;
+    IUniswapV2Router02 public exchangeRouter;
 
-    constructor(IUniswapV2Router02 _uniswap) {
-        uniswap = _uniswap;
+    constructor(IUniswapV2Router02 _exchangeRouter) {
+        exchangeRouter = _exchangeRouter;
     }
 
     function swapExactTokensForTokens(IERC20 _tokenIn, IERC20 _tokenOut, uint256 _amountIn) public returns (uint256) {
         require(_tokenIn != _tokenOut, "Input and Output Token have to be distinct");
         _tokenIn.transferFrom(msg.sender, address(this), _amountIn);
-        _tokenIn.approve(address(uniswap), _amountIn);
+        _tokenIn.approve(address(exchangeRouter), _amountIn);
         address[] memory path = new address[](2);
         path[0] = address(_tokenIn);
         path[1] = address(_tokenOut);
-        return uniswap.swapExactTokensForTokens(_amountIn, 0, path, msg.sender, block.timestamp)[1];
+        return exchangeRouter.swapExactTokensForTokens(_amountIn, 0, path, msg.sender, block.timestamp)[1];
     }
 }
