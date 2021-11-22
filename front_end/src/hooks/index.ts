@@ -1,1 +1,1 @@
-export {};
+export { useTrickle } from "./useTrickle";

@@ -26,7 +26,8 @@ contract Trickle is KeeperCompatibleInterface {
         counter = 0;
     }
 
-    function fundContract(
+    // TODO: update conntract ABI
+    function setDca(
         uint256 _amount,
         uint256 _dca_interval,
         address _token_to_buy
