@@ -18,7 +18,7 @@ contract ExchangeInterface is ReentrancyGuard, Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IUniswapV2Router02 uniswap;
+    IUniswapV2Router02 public uniswap;
 
     constructor(IUniswapV2Router02 _uniswap) {
         uniswap = _uniswap;
