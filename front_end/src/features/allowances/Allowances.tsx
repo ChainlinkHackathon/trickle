@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useEthers } from "@usedapp/core"
 import { Tab, makeStyles, Box } from "@material-ui/core"
 import { TabContext, TabList, TabPanel } from "@material-ui/lab"
-import { StakeForm } from './StakeForm'
+import { DcaForm } from './DcaForm'
 import {
   ConnectionRequiredMsg
 } from "../../components"
@@ -72,7 +72,7 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
                       <WalletBalance
                         token={supportedTokens[selectedTokenIndex]}
                       />
-                      <StakeForm token={supportedTokens[selectedTokenIndex]} />
+                      <DcaForm token={supportedTokens[selectedTokenIndex]} />
                     </div>
                   </TabPanel>
                 )

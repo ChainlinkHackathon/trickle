@@ -17,13 +17,13 @@ export const useTrickle = () => {
   console.log("ADDRESS:", trickleContractAddress);
 
 
-  const tokenFarmContract = new Contract(
+  const trickleContract = new Contract(
     trickleContractAddress,
     trickleInterface
   )
 
   const { send: setDcaSend, state: setDcaState } =
-    useContractFunction(tokenFarmContract, 'setDca', {
+    useContractFunction(trickleContract, 'setDca', {
       transactionName: 'Set DCA',
     })
 

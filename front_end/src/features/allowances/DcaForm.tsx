@@ -12,10 +12,9 @@ import { Token } from '../Main'
 import { useTrickle } from '../../hooks'
 import { utils } from 'ethers'
 import Alert from '@material-ui/lab/Alert'
-// import '../../App.css'
 
 // This is the typescript way of saying this compent needs this type
-export interface StakeFormProps {
+export interface DcaFormProps {
   token: Token
 }
 
@@ -35,8 +34,8 @@ const useStyles = makeStyles((theme) => ({
 
 // token is getting passed in as a prop
 // in the ping brackets is an object/variable
-// That object is of the shape StakeFormProps
-export const StakeForm = ({ token }: StakeFormProps) => {
+// That object is of the shape DcaFormProps
+export const DcaForm = ({ token }: DcaFormProps) => {
   const { address: tokenAddress, name } = token
 
   const { account } = useEthers()
@@ -51,7 +50,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
     ? parseFloat(formatUnits(tokenBalance, 18))
     : 0
 
-  const handleStakeSubmit = () => {
+  const handleDcaSubmit = () => {
     const amountAsWei = utils.parseEther(amount.toString())
     return setDcaSend(amountAsWei.toString(), interval.toString())
   }
@@ -66,11 +65,11 @@ export const StakeForm = ({ token }: StakeFormProps) => {
 
   const [showErc20ApprovalSuccess, setShowErc20ApprovalSuccess] =
     useState(false)
-  const [showStakeTokensSuccess, setShowStakeTokensSuccess] = useState(false)
+  const [showDcaTokensSuccess, setshowDcaTokensSuccess] = useState(false)
 
   const handleCloseSnack = () => {
     showErc20ApprovalSuccess && setShowErc20ApprovalSuccess(false)
-    showStakeTokensSuccess && setShowStakeTokensSuccess(false)
+    showDcaTokensSuccess && setshowDcaTokensSuccess(false)
   }
 
   useEffect(() => {
@@ -82,20 +81,20 @@ export const StakeForm = ({ token }: StakeFormProps) => {
       ).length > 0
     ) {
       !showErc20ApprovalSuccess && setShowErc20ApprovalSuccess(true)
-      showStakeTokensSuccess && setShowStakeTokensSuccess(false)
+      showDcaTokensSuccess && setshowDcaTokensSuccess(false)
     }
 
     if (
       notifications.filter(
         (notification) =>
           notification.type === 'transactionSucceed' &&
-          notification.transactionName === 'Stake tokens'
+          notification.transactionName === 'DCA tokens'
       ).length > 0
     ) {
       showErc20ApprovalSuccess && setShowErc20ApprovalSuccess(false)
-      !showStakeTokensSuccess && setShowStakeTokensSuccess(true)
+      !showDcaTokensSuccess && setshowDcaTokensSuccess(true)
     }
-  }, [notifications, showErc20ApprovalSuccess, showStakeTokensSuccess])
+  }, [notifications, showErc20ApprovalSuccess, showDcaTokensSuccess])
 
   const isMining = setDcaState.status === 'Mining'
 
@@ -130,7 +129,7 @@ export const StakeForm = ({ token }: StakeFormProps) => {
           color='primary'
           variant='contained'
           size='large'
-          onClick={handleStakeSubmit}
+          onClick={handleDcaSubmit}
           disabled={isMining || hasZeroAmountSelected}
         >
           {isMining ? <CircularProgress size={26} /> : 'Fund'}
@@ -147,12 +146,12 @@ export const StakeForm = ({ token }: StakeFormProps) => {
         </Alert>
       </Snackbar>
       <Snackbar
-        open={showStakeTokensSuccess}
+        open={showDcaTokensSuccess}
         autoHideDuration={5000}
         onClose={handleCloseSnack}
       >
         <Alert onClose={handleCloseSnack} severity='success'>
-          Tokens staked successfully!
+          DCA instantiated successfully!
         </Alert>
       </Snackbar>
     </>
