@@ -21,13 +21,14 @@ describe("Trickle", function () {
 
     context("#constructor", function () {
         it("Should not revert", async function () {
-            const trickle = await deployTrickle();
+            await deployTrickle();
         });
     });
 
     context("#setDca", function () {
         const sellAmount = ethers.utils.parseEther("1");
         const interval = ethers.BigNumber.from(100);
+        let trickle;
 
         async function getTokenAddresses() {
             const chainId = await getChainId();
@@ -49,8 +50,6 @@ describe("Trickle", function () {
         }
 
         async function subject() {
-            const [owner] = await ethers.getSigners();
-            const trickle = await deployTrickle();
 
             const { wethAddress, daiAddress } = await getTokenAddresses();
 
@@ -58,8 +57,24 @@ describe("Trickle", function () {
             return result;
         }
 
-        it("Should be able to set dca", async function () {
+
+        it("Should update list of token pairs correctly", async function () {
+            const[owner] = await ethers.getSigners();
+            trickle = await deployTrickle();
             await subject();
+            const tokenPairList = await trickle.getTokenPairs(owner.address);
+            expect(tokenPairList.length).to.eq(1);
         });
+
+        it("Should update list of orders correctly", async function () {
+            const[owner] = await ethers.getSigners();
+            trickle = await deployTrickle();
+            await subject();
+            const [tokenPairHash] = await trickle.getTokenPairs(owner.address);
+            const orderHashList = await trickle.getOrders(owner.address, tokenPairHash);
+            expect(orderHashList.length).to.eq(1);
+        });
+
+
     });
 });

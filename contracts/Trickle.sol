@@ -101,6 +101,35 @@ contract Trickle is KeeperCompatibleInterface {
         emit RecurringOrderUpdated(_sellToken, _buyToken, _sellAmount, _interval, _startTimestamp);
     }
 
+    function getTokenPairs(address _user)
+        external
+        view
+        returns(bytes32[] memory)
+    {
+        uint numTokenPairs = userToTokenPairList[_user].length();
+        bytes32[] memory tokenPairHashes = new bytes32[](numTokenPairs);
+        for(uint i; i<numTokenPairs; i++){
+            tokenPairHashes[i] = userToTokenPairList[_user].at(i);
+        }
+        return tokenPairHashes;
+    }
+
+    function getOrders(address _user, bytes32 _tokenPairHash)
+        external
+        view
+        returns(bytes32[] memory)
+    {
+        uint numOrders = userToOrderHash[_user][_tokenPairHash].length();
+        bytes32[] memory orderHashes = new bytes32[](numOrders);
+        for(uint i; i<numOrders; i++){
+            orderHashes[i] = userToOrderHash[_user][_tokenPairHash].at(i);
+        }
+        return orderHashes;
+    }
+
+
+
+
     function checkUpkeep(bytes calldata checkData)
         external
         view
