@@ -17,6 +17,8 @@ contract Trickle is KeeperCompatibleInterface {
 
     uint256 public counter; // Public counter variable
 
+    /* ============ Structs ========== */
+
     // This struct represents a single recurring order set by a user
     struct RecurringOrder {
         address user;
@@ -39,10 +41,24 @@ contract Trickle is KeeperCompatibleInterface {
         bytes32[] orders;
     }
 
+    /* ============ Events ========== */
+    event TokenPairCreated(
+        address sellToken,
+        address buyToken
+    );
+
+    event RecurringOrderUpdated(
+        address sellToken,
+        address buyToken,
+        uint256 sellAmount,
+        uint256 interval,
+        uint256 startTimestamp
+    );
+
+    /* ============ State Varibles ========== */
     // Enumerable mappings to be able to later iterate over the orders of a single user
     mapping(address => EnumerableSet.Bytes32Set) userToTokenPairList;
     mapping(address => mapping(bytes32 => EnumerableSet.Bytes32Set)) userToOrderHash;
-
 
     // Mapping of a hash of sell / buy token on the TokenPair data
     mapping(bytes32 => TokenPair) tokenPairs;
@@ -50,13 +66,15 @@ contract Trickle is KeeperCompatibleInterface {
     EnumerableSet.Bytes32Set initializedTokenPairs;
 
 
-    // TODO: update conntract ABI
-    // address _token_to_buy
+    /* ============ Public Methods ========== */
+
+    // Sets DCA starting now
     function setDca(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval) public {
-        setDca(_sellToken, _buyToken, _sellAmount, _interval, 0);
+        setDcaWithStartTimestamp(_sellToken, _buyToken, _sellAmount, _interval, 0);
     }
 
-    function setDca(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval, uint256 _startTimestamp) public {
+    // Sets DCA starting from _startTimestamp
+    function setDcaWithStartTimestamp(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval, uint256 _startTimestamp) public {
         require(_sellAmount > 0, "amount cannot be 0");
         bytes32 tokenPairHash = keccak256(abi.encodePacked(_sellToken, _buyToken));
 
@@ -65,6 +83,7 @@ contract Trickle is KeeperCompatibleInterface {
             tokenPair.sellToken = _sellToken;
             tokenPair.buyToken = _buyToken;
             initializedTokenPairs.add(tokenPairHash);
+            emit TokenPairCreated(_sellToken, _buyToken);
         }
         userToTokenPairList[msg.sender].add(tokenPairHash);
 
@@ -79,6 +98,7 @@ contract Trickle is KeeperCompatibleInterface {
         order.sellAmount = _sellAmount;
         order.lastExecution = _startTimestamp;
         order.interval = _interval;
+        emit RecurringOrderUpdated(_sellToken, _buyToken, _sellAmount, _interval, _startTimestamp);
     }
 
     function checkUpkeep(bytes calldata checkData)
