@@ -89,6 +89,7 @@ contract Trickle is KeeperCompatibleInterface {
     {
         uint numPairs = initializedTokenPairs.length();
         OrdersToExecute[] memory ordersToExecute = new OrdersToExecute[](numPairs);
+        uint l;
         for(uint i = 0; i < numPairs; i++){
             bytes32 tokenPairHash = initializedTokenPairs.at(i);
             uint numOrders = tokenPairs[tokenPairHash].registeredOrders.length();
@@ -104,7 +105,8 @@ contract Trickle is KeeperCompatibleInterface {
                     }
 
                 }
-                ordersToExecute[i] = OrdersToExecute(tokenPairHash, orders);
+                ordersToExecute[l] = OrdersToExecute(tokenPairHash, orders);
+                l++;
             }
 
         }
