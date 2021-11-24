@@ -4,77 +4,163 @@ const networkMapping = require("../front_end/src/chain-info/map.json");
 
 describe("Trickle", function () {
     let chainId;
-    let TrickleFactory;
+    let minimumUpkeepInterval;
+    let owner;
 
-    async function getChainId() {
+    beforeEach(async () => {
+        [owner] = await ethers.getSigners();
         const network = await ethers.provider.getNetwork();
         chainId = network.chainId;
-        return chainId;
-    }
+        minimumUpkeepInterval = ethers.BigNumber.from(1000);
+    });
 
-    async function deployTrickle() {
+    async function subject() {
         const TrickleFactory = await ethers.getContractFactory("Trickle");
-        const trickle = await TrickleFactory.deploy();
+        const trickle = await TrickleFactory.deploy(minimumUpkeepInterval);
         await trickle.deployed();
         return trickle;
     }
 
     context("#constructor", function () {
         it("Should not revert", async function () {
-            await deployTrickle();
+            await subject();
         });
     });
 
-    context("#setDca", function () {
-        const sellAmount = ethers.utils.parseEther("1");
-        const interval = ethers.BigNumber.from(100);
+    describe("when trickle contract is deployed", async () => {
         let trickle;
+        let wethAddress;
+        let daiAddress;
 
-        async function getTokenAddresses() {
-            const chainId = await getChainId();
-            const wethAddress = networkMapping[String(chainId)].Weth;
-            const daiAddress = networkMapping[String(chainId)].Dai;
-            return { wethAddress, daiAddress };
-        }
+        beforeEach(async () => {
+            const TrickleFactory = await ethers.getContractFactory("Trickle");
+            trickle = await TrickleFactory.deploy(minimumUpkeepInterval);
+            await trickle.deployed();
 
-        async function getWeth() {
-            const { wethAddress } = await getTokenAddresses();
-            const weth = await ethers.getContractAt("IWETH", wethAddress);
-            return weth;
-        }
-
-        async function getDai() {
-            const { daiAddress } = await getTokenAddresses();
-            const dai = await ethers.getContractAt("IERC20", daiAddress);
-            return dai;
-        }
-
-        async function subject() {
-
-            const { wethAddress, daiAddress } = await getTokenAddresses();
-
-            const result = await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
-            return result;
-        }
-
-
-        it("Should update list of token pairs correctly", async function () {
-            const[owner] = await ethers.getSigners();
-            trickle = await deployTrickle();
-            await subject();
-            const tokenPairList = await trickle.getTokenPairs(owner.address);
-            expect(tokenPairList.length).to.eq(1);
+            wethAddress = networkMapping[String(chainId)].Weth;
+            daiAddress = networkMapping[String(chainId)].Dai;
         });
 
-        it("Should update list of orders correctly", async function () {
-            const[owner] = await ethers.getSigners();
-            trickle = await deployTrickle();
-            await subject();
-            const [tokenPairHash] = await trickle.getTokenPairs(owner.address);
-            const orderHashList = await trickle.getOrders(owner.address, tokenPairHash);
-            expect(orderHashList.length).to.eq(1);
+        context("#setDca", function () {
+            let sellAmount;
+            let interval;
+
+            beforeEach(async () => {
+                sellAmount = ethers.utils.parseEther("1");
+                interval = ethers.BigNumber.from(10000);
+            });
+
+            async function subject() {
+                const result = await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                return result;
+            }
+
+            it("Should not revert", async function () {
+                await subject();
+            });
+
+            describe("When sellAmount is 0", async function () {
+                beforeEach(async () => {
+                    sellAmount = 0;
+                });
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("amount cannot be 0");
+                });
+            });
+
+            describe("When interval is less than minimumUpkeepInterval", async function () {
+                beforeEach(async () => {
+                    interval = minimumUpkeepInterval.div(2);
+                });
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("interval has to be greater than minimumUpkeepInterval");
+                });
+            });
+        });
+        context("#getTokenPairs", function () {
+            let user;
+
+            beforeEach(async () => {
+                user = owner.address;
+            });
+
+            async function subject() {
+                return await trickle.getTokenPairs(user);
+            }
+
+            describe("When no dca is set", async function () {
+                beforeEach(async () => {
+                    interval = minimumUpkeepInterval.div(2);
+                });
+                it("Should return empty list ", async function () {
+                    const tokenPairList = await subject();
+                    expect(tokenPairList.length).to.eq(0);
+                });
+            });
+
+            describe("When a dca is set", async function () {
+                beforeEach(async () => {
+                    const sellAmount = ethers.utils.parseEther("1");
+                    const interval = ethers.BigNumber.from(10000000);
+                    await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                });
+
+                it("Should return list of length 1", async function () {
+                    const tokenPairList = await subject();
+                    expect(tokenPairList.length).to.eq(1);
+                });
+            });
+        });
+        context("#getorders", function () {
+            let tokenPairHash;
+            let user;
+
+            beforeEach(async () => {
+                user = owner.address;
+                const sellAmount = ethers.utils.parseEther("1");
+                const interval = ethers.BigNumber.from(10000000);
+                await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                [tokenPairHash] = await trickle.getTokenPairs(owner.address);
+            });
+
+            async function subject() {
+                return await trickle.getOrders(user, tokenPairHash);
+            }
+
+            describe("When specifing a user with a dca set", function () {
+                it("Should return list of length 1", async function () {
+                    const orderHashList = await subject();
+                    expect(orderHashList.length).to.eq(1);
+                });
+            });
+
+            describe("When specifing a user without any dca set", function () {
+                beforeEach(async () => {
+                    [_, otherAccount] = await ethers.getSigners();
+                    user = otherAccount.address;
+                });
+
+                it("Should return list of length 0", async function () {
+                    const orderHashList = await subject();
+                    expect(orderHashList.length).to.eq(0);
+                });
+            });
         });
 
+        context("#checkUpKeep", function () {
+            let callData;
+            beforeEach(async () => {
+                callData = ethers.utils.hexlify(0);
+            });
 
+            async function subject() {
+                return await trickle.checkUpkeep(callData);
+            }
+
+            it("should return false if no dca is set", async function () {
+                const { upkeepNeeded } = await subject();
+                expect(upkeepNeeded).to.eq(false);
+            });
+        });
     });
 });

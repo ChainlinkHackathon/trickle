@@ -15,8 +15,6 @@ interface KeeperCompatibleInterface {
 contract Trickle is KeeperCompatibleInterface {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    uint256 public counter; // Public counter variable
-
     /* ============ Structs ========== */
 
     // This struct represents a single recurring order set by a user
@@ -65,8 +63,15 @@ contract Trickle is KeeperCompatibleInterface {
     // Register initialized pairs in an enumerable set to be able to iterate over them
     EnumerableSet.Bytes32Set initializedTokenPairs;
 
+    uint256 minimumUpkeepInterval;
+    uint256 lastUpkeep;
+
 
     /* ============ Public Methods ========== */
+
+    constructor(uint _minimumUpkeepInterval) public {
+        minimumUpkeepInterval = _minimumUpkeepInterval;
+    }
 
     // Sets DCA starting now
     function setDca(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval) public {
@@ -76,6 +81,7 @@ contract Trickle is KeeperCompatibleInterface {
     // Sets DCA starting from _startTimestamp
     function setDcaWithStartTimestamp(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval, uint256 _startTimestamp) public {
         require(_sellAmount > 0, "amount cannot be 0");
+        require(_interval > minimumUpkeepInterval, "interval has to be greater than minimumUpkeepInterval");
         bytes32 tokenPairHash = keccak256(abi.encodePacked(_sellToken, _buyToken));
 
         TokenPair storage tokenPair = tokenPairs[tokenPairHash];
@@ -136,6 +142,11 @@ contract Trickle is KeeperCompatibleInterface {
         override
         returns (bool upkeepNeeded, bytes memory performData)
     {
+
+        if(block.timestamp < lastUpkeep + minimumUpkeepInterval){
+            return(upkeepNeeded, performData);
+        }
+
         uint numPairs = initializedTokenPairs.length();
         OrdersToExecute[] memory ordersToExecute = new OrdersToExecute[](numPairs);
         uint l;
