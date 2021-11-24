@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 
 interface KeeperCompatibleInterface {
@@ -52,25 +52,24 @@ contract Trickle is KeeperCompatibleInterface {
 
     // TODO: update conntract ABI
     // address _token_to_buy
-    function setDca(address _sellToken, address _buyToken, uint256 _amount, uint256 _interval) public {
-        setDCA(_sellToken, _buyToken, _amount, _interval, 0)
+    function setDca(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval) public {
+        setDca(_sellToken, _buyToken, _sellAmount, _interval, 0);
     }
 
-    function setDca(address _sellToken, address _buyToken, uint256 _amount, uint256 _interval, uint256 _startTimestamp) public {
-        require(_amount > 0, "amount cannot be 0");
+    function setDca(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval, uint256 _startTimestamp) public {
+        require(_sellAmount > 0, "amount cannot be 0");
         bytes32 tokenPairHash = keccak256(abi.encodePacked(_sellToken, _buyToken));
 
-        TokenPair tokenPair = tokenPairs[tokenPairHash];
+        TokenPair storage tokenPair = tokenPairs[tokenPairHash];
         if(!initializedTokenPairs.contains(tokenPairHash)){
             tokenPair.sellToken = _sellToken;
             tokenPair.buyToken = _buyToken;
             initializedTokenPairs.add(tokenPairHash);
         }
-        userToTokenPairList[msg.sender].add(tokenPairHash)
+        userToTokenPairList[msg.sender].add(tokenPairHash);
 
-
-        bytes32 orderHash = keccak256(abi.encodePacked(msg.sender, _amount, _interval, _startTimestamp))
-        RecurringOrder order = tokenPair.orders[orderHash];
+        bytes32 orderHash = keccak256(abi.encodePacked(msg.sender, _sellAmount, _interval, _startTimestamp));
+        RecurringOrder storage order = tokenPair.orders[orderHash];
         if(!tokenPair.registeredOrders.contains(orderHash)){
             order.user = msg.sender;
             tokenPair.registeredOrders.add(orderHash);
@@ -88,27 +87,29 @@ contract Trickle is KeeperCompatibleInterface {
         override
         returns (bool upkeepNeeded, bytes memory performData)
     {
-        OrdersToExecute[] ordersToExecute;
-        for(uint i = 0; i < initializedTokenPairs.length(); i++){
+        uint numPairs = initializedTokenPairs.length();
+        OrdersToExecute[] memory ordersToExecute = new OrdersToExecute[](numPairs);
+        for(uint i = 0; i < numPairs; i++){
             bytes32 tokenPairHash = initializedTokenPairs.at(i);
-            TokenPair tokenPair = tokenPairs[tokenPairHash];
-            uint numOrders = tokenPair.registeredOrders.length();
+            uint numOrders = tokenPairs[tokenPairHash].registeredOrders.length();
             if(numOrders > 0){
-                bytes32[] orders;
-                for(uint j = 0; j < numOrders; j++){
-                    bytes32 orderHash = tokenPair.registeredOrders.at(j);
-                    RecurringOrder order = tokenPair.registeredOrders[orderHash];
+                bytes32[] memory orders = new bytes32[](numOrders);
+                uint k;
+                for(uint j; j < numOrders; j++){
+                    bytes32 orderHash = tokenPairs[tokenPairHash].registeredOrders.at(j);
+                    RecurringOrder memory order = tokenPairs[tokenPairHash].orders[orderHash];
                     if(block.timestamp > (order.lastExecution + order.interval)){
-                        orders.push(orderHash);
+                        orders[k] = orderHash;
+                        k++;
                     }
 
                 }
-                ordersToExecute.push(new OrdersToExecute(tokenPairHash, orders));
+                ordersToExecute[i] = OrdersToExecute(tokenPairHash, orders);
             }
 
         }
         upkeepNeeded = ordersToExecute.length > 0;
-        performData = abi.encodePacked(ordersToExecute);
+        performData = abi.encode(ordersToExecute);
     }
 
     function performUpkeep(bytes calldata performData) external override {
