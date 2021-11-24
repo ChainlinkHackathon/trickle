@@ -157,9 +157,26 @@ describe("Trickle", function () {
                 return await trickle.checkUpkeep(callData);
             }
 
-            it("should return false if no dca is set", async function () {
-                const { upkeepNeeded } = await subject();
-                expect(upkeepNeeded).to.eq(false);
+            describe("When no dca is set", function () {
+                it("should return false for upkeepNeeded", async function () {
+                    const { upkeepNeeded } = await subject();
+                    expect(upkeepNeeded).to.eq(false);
+                });
+            });
+
+            describe("When a dca is set", function () {
+                let interval;
+
+                beforeEach(async () => {
+                    const sellAmount = ethers.utils.parseEther("1");
+                    interval = ethers.BigNumber.from(10000);
+                    await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                });
+
+                it("should return true for upkeepNeeded", async function () {
+                    const { upkeepNeeded } = await subject();
+                    expect(upkeepNeeded).to.eq(true);
+                });
             });
         });
     });
