@@ -6,7 +6,7 @@ describe("Trickle", function () {
     let chainId;
     let minimumUpkeepInterval;
     let owner;
-    const sushiswapAddress = "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506";
+    const sushiswapAddress = ethers.utils.getAddress("0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506");
 
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
@@ -44,8 +44,8 @@ describe("Trickle", function () {
             trickle = await TrickleFactory.deploy(minimumUpkeepInterval, sushiswapAddress);
             await trickle.deployed();
 
-            wethAddress = networkMapping[String(chainId)].Weth;
-            daiAddress = networkMapping[String(chainId)].Dai;
+            wethAddress = ethers.utils.getAddress(networkMapping[String(chainId)].Weth);
+            daiAddress = ethers.utils.getAddress(networkMapping[String(chainId)].Dai);
         });
 
         context("#setDca", function () {
@@ -165,7 +165,41 @@ describe("Trickle", function () {
                 });
             });
         });
-        context("#getorders", function () {
+        context("#getTokenPairData", function () {
+            let user;
+            let tokenPairHash;
+
+            beforeEach(async () => {
+                user = owner.address;
+                const sellAmount = ethers.utils.parseEther("1");
+                const interval = ethers.BigNumber.from(10000000);
+                await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                [tokenPairHash] = await trickle.getTokenPairs(user);
+            });
+
+            async function subject() {
+                return await trickle.getTokenPairData(tokenPairHash);
+            }
+
+            describe("When tokenPair exists", async function () {
+                it("Should return correct token Addresses", async function () {
+                    const [sellToken, buyToken] = await subject();
+                    expect(sellToken).to.eq(wethAddress);
+                    expect(buyToken).to.eq(daiAddress);
+                });
+            });
+            describe("When tokenPair does not exist", async function () {
+                beforeEach(async () => {
+                    tokenPairHash = ethers.utils.formatBytes32String("RANDOMTEXT");
+                });
+                it("Should return zero addresses", async function () {
+                    const [sellToken, buyToken] = await subject();
+                    expect(sellToken).to.eq(ethers.constants.AddressZero);
+                    expect(buyToken).to.eq(ethers.constants.AddressZero);
+                });
+            });
+        });
+        context("#getOrders", function () {
             let tokenPairHash;
             let user;
 
@@ -284,7 +318,7 @@ describe("Trickle", function () {
 
                 context("when enough sellToken is approved", function () {
                     beforeEach(async () => {
-                        await weth.deposit({value: sellAmount});
+                        await weth.deposit({ value: sellAmount });
                         await weth.approve(trickle.address, sellAmount);
                     });
                     it("should consume correct amount of sell token", async function () {

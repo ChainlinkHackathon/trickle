@@ -148,6 +148,24 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         );
     }
 
+    function getOrderData(bytes32 _tokenPairHash, bytes32 _orderHash)
+        external
+        view
+        returns (RecurringOrder memory)
+    {
+        TokenPair storage tokenPair = tokenPairs[_tokenPairHash];
+        return tokenPair.orders[_orderHash];
+    }
+
+    function getTokenPairData(bytes32 _tokenPairHash)
+        external
+        view
+        returns (address, address)
+    {
+        TokenPair storage tokenPair = tokenPairs[_tokenPairHash];
+        return (tokenPair.sellToken, tokenPair.buyToken);
+    }
+
     function getTokenPairs(address _user)
         external
         view
