@@ -235,6 +235,47 @@ describe("Trickle", function () {
             });
         });
 
+        context("#getOrderData", function () {
+            let tokenPairHash;
+            let orderHash;
+            let user;
+            let sellAmount;
+            let interval;
+
+            beforeEach(async () => {
+                user = owner.address;
+                sellAmount = ethers.utils.parseEther("1");
+                interval = ethers.BigNumber.from(10000000);
+                await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                [tokenPairHash] = await trickle.getTokenPairs(owner.address);
+                [orderHash] = await trickle.getOrders(user, tokenPairHash);
+            });
+
+            async function subject() {
+                return await trickle.getOrderData(tokenPairHash, orderHash);
+            }
+
+            describe("When querying existing order", function () {
+                it("Should return correctData", async function () {
+                    const orderData = await subject();
+                    expect(orderData.sellAmount).to.eq(sellAmount);
+                    expect(orderData.interval).to.eq(interval);
+                });
+            });
+
+            describe("When querying non-existign order", function () {
+                beforeEach(async () => {
+                    orderHash = ethers.utils.formatBytes32String("RANDOMTEXT");
+                });
+
+                it("Should return data with zero fields", async function () {
+                    const orderData = await subject();
+                    expect(orderData.sellAmount).to.eq(ethers.BigNumber.from(0));
+                    expect(orderData.interval).to.eq(ethers.BigNumber.from(0));
+                });
+            });
+        });
+
         context("#checkUpKeep", function () {
             let callData;
             beforeEach(async () => {
