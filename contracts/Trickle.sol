@@ -176,7 +176,7 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     * Utility function for frontend to get data on a given order
     *
     * @param _tokenPairHash    Hash of sell and buyToken addresses identifying the tokenPair.
-    * @param _orderhash        Hash of remaining order data (user address, amount, interval)
+    * @param _orderHash        Hash of remaining order data (user address, amount, interval)
     *
     * @return Instance of RecurringOrder struct containing amount interval etc.
     *
@@ -336,7 +336,7 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     /**
     * Execute orders for one token pair
     *
-    * @param ordersToExecute   Struct containing tokenPair hash and list of order hashes that need to be executed for this token pair.
+    * @param order   Struct containing tokenPair hash and list of order hashes that need to be executed for this token pair.
     *
     */
     function _executeOrder(OrdersToExecute memory order) internal {
