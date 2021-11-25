@@ -11,9 +11,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-
-contract ExchangeInterface is ReentrancyGuard, Ownable {
-
+contract ExchangeAdapter is ReentrancyGuard, Ownable {
     using Address for address payable;
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -24,13 +22,28 @@ contract ExchangeInterface is ReentrancyGuard, Ownable {
         exchangeRouter = _exchangeRouter;
     }
 
-    function swapExactTokensForTokens(IERC20 _tokenIn, IERC20 _tokenOut, uint256 _amountIn, address _user) public returns (uint256) {
-        require(_tokenIn != _tokenOut, "Input and Output Token have to be distinct");
+    function swapExactTokensForTokens(
+        IERC20 _tokenIn,
+        IERC20 _tokenOut,
+        uint256 _amountIn,
+        address _user
+    ) public returns (bool) {
+        require(
+            _tokenIn != _tokenOut,
+            "Input and Output Token have to be distinct"
+        );
         _tokenIn.transferFrom(_user, address(this), _amountIn);
         _tokenIn.approve(address(exchangeRouter), _amountIn);
         address[] memory path = new address[](2);
         path[0] = address(_tokenIn);
         path[1] = address(_tokenOut);
-        return exchangeRouter.swapExactTokensForTokens(_amountIn, 0, path, _user, block.timestamp)[1];
+        exchangeRouter.swapExactTokensForTokens(
+            _amountIn,
+            0,
+            path,
+            _user,
+            block.timestamp
+        )[1];
+        return true;
     }
 }

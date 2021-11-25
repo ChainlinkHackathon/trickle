@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const networkMapping = require("../front_end/src/chain-info/map.json");
 
-describe("ExchangeInterface", function () {
+describe("ExchangeAdapter", function () {
     const sushiswapAddress = "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506";
     let chainId;
 
@@ -12,17 +12,17 @@ describe("ExchangeInterface", function () {
         return chainId;
     }
 
-    async function deployExchangeInterface() {
-        const ExchangeIntefaceFactory = await ethers.getContractFactory("ExchangeInterface");
-        const exchangeInterface = await ExchangeIntefaceFactory.deploy(sushiswapAddress);
-        await exchangeInterface.deployed();
-        return exchangeInterface;
+    async function deployExchangeAdapter() {
+        const ExchangeIntefaceFactory = await ethers.getContractFactory("ExchangeAdapter");
+        const exchangeAdapter = await ExchangeIntefaceFactory.deploy(sushiswapAddress);
+        await exchangeAdapter.deployed();
+        return exchangeAdapter;
     }
 
     context("#constructor", function () {
         it("Should return uniswap / exchange address when deployed", async function () {
-            const exchangeInterface = await deployExchangeInterface();
-            expect(await exchangeInterface.exchangeRouter()).to.equal(sushiswapAddress);
+            const exchangeAdapter = await deployExchangeAdapter();
+            expect(await exchangeAdapter.exchangeRouter()).to.equal(sushiswapAddress);
         });
     });
 
@@ -50,13 +50,15 @@ describe("ExchangeInterface", function () {
 
         async function subject() {
             const [owner] = await ethers.getSigners();
-            const exchangeInterface = await deployExchangeInterface();
+            const exchangeAdapter = await deployExchangeAdapter();
 
             const { wethAddress, daiAddress } = await getTokenAddresses();
 
             const weth = await getWeth();
-            await weth.connect(owner).approve(exchangeInterface.address, wethAmount);
-            const result = await exchangeInterface.connect(owner).swapExactTokensForTokens(wethAddress, daiAddress, wethAmount);
+            await weth.connect(owner).approve(exchangeAdapter.address, wethAmount);
+            const result = await exchangeAdapter
+                .connect(owner)
+                .swapExactTokensForTokens(wethAddress, daiAddress, wethAmount, owner.address);
             return result;
         }
 

@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import { IExchangeInterface } from "./IExchangeInterface.sol";
+import { ExchangeAdapter } from "./ExchangeAdapter.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IUniswapV2Router02 } from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 interface KeeperCompatibleInterface {
     function checkUpkeep(bytes calldata checkData)
@@ -13,7 +14,7 @@ interface KeeperCompatibleInterface {
     function performUpkeep(bytes calldata performData) external;
 }
 
-contract Trickle is KeeperCompatibleInterface {
+contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /* ============ Structs ========== */
@@ -52,6 +53,7 @@ contract Trickle is KeeperCompatibleInterface {
     );
 
     event SwapFailed(bytes32 tokenPairHash, bytes32 orderHash);
+    event SwapSucceeded(bytes32 tokenPairHash, bytes32 orderHash);
 
     /* ============ State Varibles ========== */
     // Enumerable mappings to be able to later iterate over the orders of a single user
@@ -66,16 +68,13 @@ contract Trickle is KeeperCompatibleInterface {
     uint256 public minimumUpkeepInterval;
     uint256 lastUpkeep;
 
-    IExchangeInterface public exchangeInterface;
-
     /* ============ Public Methods ========== */
 
     constructor(
         uint256 _minimumUpkeepInterval,
-        IExchangeInterface _exchangeInterface
-    ) public {
+        IUniswapV2Router02 _exchangeRouter
+    ) public ExchangeAdapter(_exchangeRouter) {
         minimumUpkeepInterval = _minimumUpkeepInterval;
-        exchangeInterface = _exchangeInterface;
     }
 
     // Sets DCA starting now
@@ -237,9 +236,7 @@ contract Trickle is KeeperCompatibleInterface {
         }
     }
 
-    function _executeOrder(OrdersToExecute memory order)
-        internal
-    {
+    function _executeOrder(OrdersToExecute memory order) internal {
         if (order.orders.length == 0) return;
 
         TokenPair storage tokenPair = tokenPairs[order.tokenPairHash];
@@ -251,16 +248,16 @@ contract Trickle is KeeperCompatibleInterface {
             RecurringOrder storage recurringOrder = tokenPair.orders[orderHash];
             uint256 sellAmount = recurringOrder.sellAmount;
             address user = recurringOrder.user;
-            try
-                exchangeInterface.swapExactTokensForTokens(
-                    sellToken,
-                    buyToken,
-                    sellAmount,
-                    user
-                )
-            {
+            bool success = swapExactTokensForTokens(
+                sellToken,
+                buyToken,
+                sellAmount,
+                user
+            );
+            if (success) {
                 recurringOrder.lastExecution = block.timestamp;
-            } catch {
+                emit SwapSucceeded(order.tokenPairHash, orderHash);
+            } else {
                 emit SwapFailed(order.tokenPairHash, orderHash);
             }
         }
