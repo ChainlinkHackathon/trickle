@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import { IExchangeInterface } from "./IExchangeInterface.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface KeeperCompatibleInterface {
     function checkUpkeep(bytes calldata checkData)
@@ -50,6 +51,8 @@ contract Trickle is KeeperCompatibleInterface {
         uint256 startTimestamp
     );
 
+    event SwapFailed(bytes32 tokenPairHash, bytes32 orderHash);
+
     /* ============ State Varibles ========== */
     // Enumerable mappings to be able to later iterate over the orders of a single user
     mapping(address => EnumerableSet.Bytes32Set) userToTokenPairList;
@@ -67,7 +70,10 @@ contract Trickle is KeeperCompatibleInterface {
 
     /* ============ Public Methods ========== */
 
-    constructor(uint256 _minimumUpkeepInterval, IExchangeInterface _exchangeInterface) public {
+    constructor(
+        uint256 _minimumUpkeepInterval,
+        IExchangeInterface _exchangeInterface
+    ) public {
         minimumUpkeepInterval = _minimumUpkeepInterval;
         exchangeInterface = _exchangeInterface;
     }
@@ -97,6 +103,8 @@ contract Trickle is KeeperCompatibleInterface {
         uint256 _startTimestamp
     ) public {
         require(_sellAmount > 0, "amount cannot be 0");
+        require(_sellToken != address(0), "sellToken cannot be zero address");
+        require(_buyToken != address(0), "buyToken cannot be zero address");
         require(
             _interval > minimumUpkeepInterval,
             "interval has to be greater than minimumUpkeepInterval"
@@ -167,7 +175,7 @@ contract Trickle is KeeperCompatibleInterface {
         return orderHashes;
     }
 
-    function checkUpkeep(bytes calldata checkData)
+    function checkUpkeep(bytes calldata)
         external
         view
         override
@@ -212,6 +220,49 @@ contract Trickle is KeeperCompatibleInterface {
     }
 
     function performUpkeep(bytes calldata performData) external override {
-        // do stuff with user -> interval and user -> amount here
+        OrdersToExecute[] memory ordersToExecute = abi.decode(
+            performData,
+            (OrdersToExecute[])
+        );
+        if (ordersToExecute.length > 0) {
+            _executeOrders(ordersToExecute);
+        }
+    }
+
+    function _executeOrders(OrdersToExecute[] memory ordersToExecute) internal {
+        for (uint256 i; i < ordersToExecute.length; i++) {
+            OrdersToExecute memory order = ordersToExecute[i];
+            if (order.tokenPairHash == bytes32(0)) break;
+            _executeOrder(order);
+        }
+    }
+
+    function _executeOrder(OrdersToExecute memory order)
+        internal
+    {
+        if (order.orders.length == 0) return;
+
+        TokenPair storage tokenPair = tokenPairs[order.tokenPairHash];
+        IERC20 sellToken = IERC20(tokenPair.sellToken);
+        IERC20 buyToken = IERC20(tokenPair.buyToken);
+        for (uint256 i; i < order.orders.length; i++) {
+            bytes32 orderHash = order.orders[i];
+            if (orderHash == bytes32(0)) break;
+            RecurringOrder storage recurringOrder = tokenPair.orders[orderHash];
+            uint256 sellAmount = recurringOrder.sellAmount;
+            address user = recurringOrder.user;
+            try
+                exchangeInterface.swapExactTokensForTokens(
+                    sellToken,
+                    buyToken,
+                    sellAmount,
+                    user
+                )
+            {
+                recurringOrder.lastExecution = block.timestamp;
+            } catch {
+                emit SwapFailed(order.tokenPairHash, orderHash);
+            }
+        }
     }
 }
