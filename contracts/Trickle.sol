@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
+import { IExchangeInterface } from "./IExchangeInterface.sol";
 
 interface KeeperCompatibleInterface {
     function checkUpkeep(bytes calldata checkData)
@@ -24,7 +24,7 @@ contract Trickle is KeeperCompatibleInterface {
         uint256 lastExecution;
         uint256 interval;
     }
-    
+
     // This struct represents the combination of sell / buy token and all the orders for that pair
     struct TokenPair {
         address sellToken;
@@ -32,7 +32,7 @@ contract Trickle is KeeperCompatibleInterface {
         mapping(bytes32 => RecurringOrder) orders;
         EnumerableSet.Bytes32Set registeredOrders;
     }
-    
+
     // Data structure to return in checkUpkeep defining which orders will need to get executed
     struct OrdersToExecute {
         bytes32 tokenPairHash;
@@ -40,10 +40,7 @@ contract Trickle is KeeperCompatibleInterface {
     }
 
     /* ============ Events ========== */
-    event TokenPairCreated(
-        address sellToken,
-        address buyToken
-    );
+    event TokenPairCreated(address sellToken, address buyToken);
 
     event RecurringOrderUpdated(
         address sellToken,
@@ -63,29 +60,53 @@ contract Trickle is KeeperCompatibleInterface {
     // Register initialized pairs in an enumerable set to be able to iterate over them
     EnumerableSet.Bytes32Set initializedTokenPairs;
 
-    uint256 minimumUpkeepInterval;
+    uint256 public minimumUpkeepInterval;
     uint256 lastUpkeep;
 
+    IExchangeInterface public exchangeInterface;
 
     /* ============ Public Methods ========== */
 
-    constructor(uint _minimumUpkeepInterval) public {
+    constructor(uint256 _minimumUpkeepInterval, IExchangeInterface _exchangeInterface) public {
         minimumUpkeepInterval = _minimumUpkeepInterval;
+        exchangeInterface = _exchangeInterface;
     }
 
     // Sets DCA starting now
-    function setDca(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval) public {
-        setDcaWithStartTimestamp(_sellToken, _buyToken, _sellAmount, _interval, 0);
+    function setDca(
+        address _sellToken,
+        address _buyToken,
+        uint256 _sellAmount,
+        uint256 _interval
+    ) public {
+        setDcaWithStartTimestamp(
+            _sellToken,
+            _buyToken,
+            _sellAmount,
+            _interval,
+            0
+        );
     }
 
     // Sets DCA starting from _startTimestamp
-    function setDcaWithStartTimestamp(address _sellToken, address _buyToken, uint256 _sellAmount, uint256 _interval, uint256 _startTimestamp) public {
+    function setDcaWithStartTimestamp(
+        address _sellToken,
+        address _buyToken,
+        uint256 _sellAmount,
+        uint256 _interval,
+        uint256 _startTimestamp
+    ) public {
         require(_sellAmount > 0, "amount cannot be 0");
-        require(_interval > minimumUpkeepInterval, "interval has to be greater than minimumUpkeepInterval");
-        bytes32 tokenPairHash = keccak256(abi.encodePacked(_sellToken, _buyToken));
+        require(
+            _interval > minimumUpkeepInterval,
+            "interval has to be greater than minimumUpkeepInterval"
+        );
+        bytes32 tokenPairHash = keccak256(
+            abi.encodePacked(_sellToken, _buyToken)
+        );
 
         TokenPair storage tokenPair = tokenPairs[tokenPairHash];
-        if(!initializedTokenPairs.contains(tokenPairHash)){
+        if (!initializedTokenPairs.contains(tokenPairHash)) {
             tokenPair.sellToken = _sellToken;
             tokenPair.buyToken = _buyToken;
             initializedTokenPairs.add(tokenPairHash);
@@ -93,9 +114,16 @@ contract Trickle is KeeperCompatibleInterface {
         }
         userToTokenPairList[msg.sender].add(tokenPairHash);
 
-        bytes32 orderHash = keccak256(abi.encodePacked(msg.sender, _sellAmount, _interval, _startTimestamp));
+        bytes32 orderHash = keccak256(
+            abi.encodePacked(
+                msg.sender,
+                _sellAmount,
+                _interval,
+                _startTimestamp
+            )
+        );
         RecurringOrder storage order = tokenPair.orders[orderHash];
-        if(!tokenPair.registeredOrders.contains(orderHash)){
+        if (!tokenPair.registeredOrders.contains(orderHash)) {
             order.user = msg.sender;
             tokenPair.registeredOrders.add(orderHash);
         }
@@ -104,17 +132,23 @@ contract Trickle is KeeperCompatibleInterface {
         order.sellAmount = _sellAmount;
         order.lastExecution = _startTimestamp;
         order.interval = _interval;
-        emit RecurringOrderUpdated(_sellToken, _buyToken, _sellAmount, _interval, _startTimestamp);
+        emit RecurringOrderUpdated(
+            _sellToken,
+            _buyToken,
+            _sellAmount,
+            _interval,
+            _startTimestamp
+        );
     }
 
     function getTokenPairs(address _user)
         external
         view
-        returns(bytes32[] memory)
+        returns (bytes32[] memory)
     {
-        uint numTokenPairs = userToTokenPairList[_user].length();
+        uint256 numTokenPairs = userToTokenPairList[_user].length();
         bytes32[] memory tokenPairHashes = new bytes32[](numTokenPairs);
-        for(uint i; i<numTokenPairs; i++){
+        for (uint256 i; i < numTokenPairs; i++) {
             tokenPairHashes[i] = userToTokenPairList[_user].at(i);
         }
         return tokenPairHashes;
@@ -123,18 +157,15 @@ contract Trickle is KeeperCompatibleInterface {
     function getOrders(address _user, bytes32 _tokenPairHash)
         external
         view
-        returns(bytes32[] memory)
+        returns (bytes32[] memory)
     {
-        uint numOrders = userToOrderHash[_user][_tokenPairHash].length();
+        uint256 numOrders = userToOrderHash[_user][_tokenPairHash].length();
         bytes32[] memory orderHashes = new bytes32[](numOrders);
-        for(uint i; i<numOrders; i++){
+        for (uint256 i; i < numOrders; i++) {
             orderHashes[i] = userToOrderHash[_user][_tokenPairHash].at(i);
         }
         return orderHashes;
     }
-
-
-
 
     function checkUpkeep(bytes calldata checkData)
         external
@@ -142,34 +173,40 @@ contract Trickle is KeeperCompatibleInterface {
         override
         returns (bool upkeepNeeded, bytes memory performData)
     {
-
-        if(block.timestamp < lastUpkeep + minimumUpkeepInterval){
-            return(upkeepNeeded, performData);
+        if (block.timestamp < lastUpkeep + minimumUpkeepInterval) {
+            return (upkeepNeeded, performData);
         }
 
-        uint numPairs = initializedTokenPairs.length();
-        OrdersToExecute[] memory ordersToExecute = new OrdersToExecute[](numPairs);
-        uint l;
-        for(uint i = 0; i < numPairs; i++){
+        uint256 numPairs = initializedTokenPairs.length();
+        OrdersToExecute[] memory ordersToExecute = new OrdersToExecute[](
+            numPairs
+        );
+        uint256 l;
+        for (uint256 i = 0; i < numPairs; i++) {
             bytes32 tokenPairHash = initializedTokenPairs.at(i);
-            uint numOrders = tokenPairs[tokenPairHash].registeredOrders.length();
-            if(numOrders > 0){
+            uint256 numOrders = tokenPairs[tokenPairHash]
+                .registeredOrders
+                .length();
+            if (numOrders > 0) {
                 bytes32[] memory orders = new bytes32[](numOrders);
-                uint k;
-                for(uint j; j < numOrders; j++){
-                    bytes32 orderHash = tokenPairs[tokenPairHash].registeredOrders.at(j);
-                    RecurringOrder memory order = tokenPairs[tokenPairHash].orders[orderHash];
-                    if(block.timestamp > (order.lastExecution + order.interval)){
+                uint256 k;
+                for (uint256 j; j < numOrders; j++) {
+                    bytes32 orderHash = tokenPairs[tokenPairHash]
+                        .registeredOrders
+                        .at(j);
+                    RecurringOrder memory order = tokenPairs[tokenPairHash]
+                        .orders[orderHash];
+                    if (
+                        block.timestamp > (order.lastExecution + order.interval)
+                    ) {
                         orders[k] = orderHash;
                         k++;
                         upkeepNeeded = true;
                     }
-
                 }
                 ordersToExecute[l] = OrdersToExecute(tokenPairHash, orders);
                 l++;
             }
-
         }
         performData = abi.encode(ordersToExecute);
     }
