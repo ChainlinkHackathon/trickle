@@ -260,7 +260,6 @@ describe("Trickle", function () {
         });
         context("#checkUpKeep", function () {
             let performData;
-            let upkeepNeeded;
             let callData;
 
             async function subject() {
@@ -269,19 +268,46 @@ describe("Trickle", function () {
 
             describe("When a dca is set", function () {
                 let interval;
+                let weth;
+                let dai;
+                let sellAmount;
 
                 beforeEach(async () => {
-                    const sellAmount = ethers.utils.parseEther("1");
+                    sellAmount = ethers.utils.parseEther("1");
                     interval = ethers.BigNumber.from(10000);
                     callData = ethers.utils.hexlify(0);
+                    weth = await ethers.getContractAt("IWETH", wethAddress);
+                    dai = await ethers.getContractAt("IERC20", daiAddress);
                     await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
                     ({ performData, upkeepNeeded } = await trickle.checkUpkeep(callData));
                 });
 
-                it("should not revert", async function () {
-                    await subject();
+                context("when enough sellToken is approved", function () {
+                    beforeEach(async () => {
+                        await weth.deposit({value: sellAmount});
+                        await weth.approve(trickle.address, sellAmount);
+                    });
+                    it("should consume correct amount of sell token", async function () {
+                        const wethBalanceBefore = await weth.balanceOf(owner.address);
+                        await subject();
+                        const wethBalanceAfter = await weth.balanceOf(owner.address);
+                        expect(wethBalanceBefore.sub(wethBalanceAfter)).to.eq(sellAmount);
+                    });
+                    it("should return positive amount of buyToken", async function () {
+                        const daiBalanceBefore = await dai.balanceOf(owner.address);
+                        await subject();
+                        const daiBalanceAfter = await dai.balanceOf(owner.address);
+                        expect(daiBalanceAfter.gt(daiBalanceBefore));
+                    });
                 });
-
+                context("when no sellToken is approved", function () {
+                    it("should consume zero amount of sell token", async function () {
+                        const wethBalanceBefore = await weth.balanceOf(owner.address);
+                        await subject();
+                        const wethBalanceAfter = await weth.balanceOf(owner.address);
+                        expect(wethBalanceBefore).to.eq(wethBalanceAfter);
+                    });
+                });
             });
         });
     });

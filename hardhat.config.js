@@ -74,6 +74,7 @@ module.exports = {
             forking: {
                 url: `${KOVAN_JSON_RPC_URL}`,
             },
+            timeout: 50000,
         },
         kovan: {
             url: `${KOVAN_JSON_RPC_URL}`,

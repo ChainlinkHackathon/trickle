@@ -11,6 +11,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
+import "hardhat/console.sol";
+
 contract ExchangeAdapter is ReentrancyGuard, Ownable {
     using Address for address payable;
     using SafeMath for uint256;
@@ -32,18 +34,25 @@ contract ExchangeAdapter is ReentrancyGuard, Ownable {
             _tokenIn != _tokenOut,
             "Input and Output Token have to be distinct"
         );
-        _tokenIn.transferFrom(_user, address(this), _amountIn);
-        _tokenIn.approve(address(exchangeRouter), _amountIn);
-        address[] memory path = new address[](2);
-        path[0] = address(_tokenIn);
-        path[1] = address(_tokenOut);
-        exchangeRouter.swapExactTokensForTokens(
-            _amountIn,
-            0,
-            path,
-            _user,
-            block.timestamp
-        )[1];
-        return true;
+        console.log("TRANSFER FROM");
+        try _tokenIn.transferFrom(_user, address(this), _amountIn) {
+            console.log("APPROVE");
+            _tokenIn.approve(address(exchangeRouter), _amountIn);
+            address[] memory path = new address[](2);
+            path[0] = address(_tokenIn);
+            path[1] = address(_tokenOut);
+            console.log("CALLING EXCHANGE ROUTER");
+            exchangeRouter.swapExactTokensForTokens(
+                _amountIn,
+                0,
+                path,
+                _user,
+                block.timestamp
+            )[1];
+            console.log("CALLED EXCHANGE ROUTER");
+            return true;
+        } catch {
+            return false;
+        }
     }
 }
