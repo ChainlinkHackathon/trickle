@@ -7,21 +7,17 @@ describe("Trickle", function () {
     let minimumUpkeepInterval;
     let owner;
     const sushiswapAddress = "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506";
-    let exchangeInterface;
 
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
         const network = await ethers.provider.getNetwork();
         chainId = network.chainId;
         minimumUpkeepInterval = ethers.BigNumber.from(1000);
-        const ExchangeIntefaceFactory = await ethers.getContractFactory("ExchangeInterface");
-        exchangeInterface = await ExchangeIntefaceFactory.deploy(sushiswapAddress);
-        await exchangeInterface.deployed();
     });
 
     async function subject() {
         const TrickleFactory = await ethers.getContractFactory("Trickle");
-        const trickle = await TrickleFactory.deploy(minimumUpkeepInterval, exchangeInterface.address);
+        const trickle = await TrickleFactory.deploy(minimumUpkeepInterval, sushiswapAddress);
         await trickle.deployed();
         return trickle;
     }
@@ -36,12 +32,6 @@ describe("Trickle", function () {
             const returnedMinimumUpkeepInterval = await trickle.minimumUpkeepInterval();
             expect(returnedMinimumUpkeepInterval).to.eq(minimumUpkeepInterval);
         });
-
-        it("Sets exchangeInterface correctly", async function () {
-            const trickle = await subject();
-            const returnedExchangeInterface = await trickle.exchangeInterface();
-            expect(returnedExchangeInterface).to.eq(exchangeInterface.address);
-        });
     });
 
     describe("when trickle contract is deployed", async () => {
@@ -51,7 +41,7 @@ describe("Trickle", function () {
 
         beforeEach(async () => {
             const TrickleFactory = await ethers.getContractFactory("Trickle");
-            trickle = await TrickleFactory.deploy(minimumUpkeepInterval, exchangeInterface.address);
+            trickle = await TrickleFactory.deploy(minimumUpkeepInterval, sushiswapAddress);
             await trickle.deployed();
 
             wethAddress = networkMapping[String(chainId)].Weth;
