@@ -70,6 +70,13 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
 
     /* ============ Public Methods ========== */
 
+    /**
+    * Creates new instance of Trickle contract
+    *
+    * @param _minimumUpkeepInterval   Minimum interval between upkeeps independent of users orders
+    * @param _exchangeRouter          Address of Sushiswap / UniswapV2 router contract to execute trades against
+    *
+    */
     constructor(
         uint256 _minimumUpkeepInterval,
         IUniswapV2Router02 _exchangeRouter
@@ -77,7 +84,15 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         minimumUpkeepInterval = _minimumUpkeepInterval;
     }
 
-    // Sets DCA starting now
+    /**
+    * Creates a new recurring order for the given User starting immediately.
+    *
+    * @param _sellToken        Address of token to sell
+    * @param _buyToken         Address of token to buy
+    * @param _sellAmount       Amount of sell token to sell in each trade
+    * @param _interval         Interval of execution in ms
+    *
+    */
     function setDca(
         address _sellToken,
         address _buyToken,
@@ -93,7 +108,16 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         );
     }
 
-    // Sets DCA starting from _startTimestamp
+    /**
+    * Creates a new recurring order for the given User starting from the given block timestamp.
+    *
+    * @param _sellToken        Address of token to sell
+    * @param _buyToken         Address of token to buy
+    * @param _sellAmount       Amount of sell token to sell in each trade
+    * @param _interval         Interval of execution in ms
+    * @param _startTimestamp   Block timestamp from which to start the execution of this order
+    *
+    */
     function setDcaWithStartTimestamp(
         address _sellToken,
         address _buyToken,
@@ -148,6 +172,15 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         );
     }
 
+    /**
+    * Utility function for frontend to get data on a given order
+    *
+    * @param _tokenPairHash    Hash of sell and buyToken addresses identifying the tokenPair.
+    * @param _orderhash        Hash of remaining order data (user address, amount, interval)
+    *
+    * @return Instance of RecurringOrder struct containing amount interval etc.
+    *
+    */
     function getOrderData(bytes32 _tokenPairHash, bytes32 _orderHash)
         external
         view
@@ -157,6 +190,15 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         return tokenPair.orders[_orderHash];
     }
 
+    /**
+    * Utility function for frontend to get data on a given token pair
+    *
+    * @param _tokenPairHash    Hash of sell and buyToken addresses identifying the tokenPair.
+    *
+    * @return Address of token to be sold
+    * @return Address of token to be bought
+    *
+    */
     function getTokenPairData(bytes32 _tokenPairHash)
         external
         view
@@ -166,6 +208,14 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         return (tokenPair.sellToken, tokenPair.buyToken);
     }
 
+    /**
+    * Utility function for frontend to get all token pairs for which the given user has set orders
+    *
+    * @param _user    Address of the user for which to query active token pairs
+    *
+    * @return Array of tokenPair-hashes identifying combinations of sell / buyToken for which the user has active orders
+    *
+    */
     function getTokenPairs(address _user)
         external
         view
@@ -179,6 +229,15 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         return tokenPairHashes;
     }
 
+    /**
+    * List hashes of active orders for given tokenPair and user
+    *
+    * @param _user             Address of the user for which to query active token pairs
+    * @param _tokenPairHash    Hash of sell and buyToken addresses identifying the tokenPair.
+    *
+    * @return Array of order-hashes identifying the orders set for given user and token pair
+    *
+    */
     function getOrders(address _user, bytes32 _tokenPairHash)
         external
         view
@@ -192,6 +251,14 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         return orderHashes;
     }
 
+    /**
+    * Check if Upkeep is needed and generate performData
+    *
+    *
+    * @return upkeepNeeded     Boolean indicating wether upkeep needs to be performed
+    * @return performData      Serialized array of structs identifying orders to be executed in next upkeep
+    *
+    */
     function checkUpkeep(bytes calldata)
         external
         view
@@ -236,6 +303,12 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         performData = abi.encode(ordersToExecute);
     }
 
+    /**
+    * Perform Upkeep executing all pending orders
+    *
+    * @param performData      Serialized array of structs identifying orders to be executed as returned by checkUpkeep
+    *
+    */
     function performUpkeep(bytes calldata performData) external override {
         OrdersToExecute[] memory ordersToExecute = abi.decode(
             performData,
@@ -246,6 +319,12 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         }
     }
 
+    /**
+    * Internal helper function to execute all pending orders for all token pairs
+    *
+    * @param ordersToExecute   Array of structs with one element for each token pair that has pending orders. Each element contains a list of order hashes that need to be executed for this token pair
+    *
+    */
     function _executeOrders(OrdersToExecute[] memory ordersToExecute) internal {
         for (uint256 i; i < ordersToExecute.length; i++) {
             OrdersToExecute memory order = ordersToExecute[i];
@@ -254,6 +333,12 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         }
     }
 
+    /**
+    * Execute orders for one token pair
+    *
+    * @param ordersToExecute   Struct containing tokenPair hash and list of order hashes that need to be executed for this token pair.
+    *
+    */
     function _executeOrder(OrdersToExecute memory order) internal {
         if (order.orders.length == 0) return;
 
