@@ -162,6 +162,7 @@ contract Trickle is KeeperCompatibleInterface {
                     if(block.timestamp > (order.lastExecution + order.interval)){
                         orders[k] = orderHash;
                         k++;
+                        upkeepNeeded = true;
                     }
 
                 }
@@ -170,7 +171,6 @@ contract Trickle is KeeperCompatibleInterface {
             }
 
         }
-        upkeepNeeded = ordersToExecute.length > 0;
         performData = abi.encode(ordersToExecute);
     }
 

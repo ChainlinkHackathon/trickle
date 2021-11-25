@@ -77,6 +77,47 @@ describe("Trickle", function () {
                 });
             });
         });
+        context("#setDcaWithStartTimestamp", function () {
+            let sellAmount;
+            let interval;
+            let startTimestamp;
+            const delayInMs = 10000;
+
+            beforeEach(async () => {
+                sellAmount = ethers.utils.parseEther("1");
+                interval = ethers.BigNumber.from(10000);
+                const blockNum = await ethers.provider.getBlockNumber();
+                const block = await ethers.provider.getBlock(blockNum);
+                startTimestamp = block.timestamp + delayInMs;
+            });
+
+            async function subject() {
+                const result = await trickle.setDcaWithStartTimestamp(wethAddress, daiAddress, sellAmount, interval, startTimestamp);
+                return result;
+            }
+
+            it("Should not revert", async function () {
+                await subject();
+            });
+
+            describe("When sellAmount is 0", async function () {
+                beforeEach(async () => {
+                    sellAmount = 0;
+                });
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("amount cannot be 0");
+                });
+            });
+
+            describe("When interval is less than minimumUpkeepInterval", async function () {
+                beforeEach(async () => {
+                    interval = minimumUpkeepInterval.div(2);
+                });
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("interval has to be greater than minimumUpkeepInterval");
+                });
+            });
+        });
         context("#getTokenPairs", function () {
             let user;
 
@@ -176,6 +217,25 @@ describe("Trickle", function () {
                 it("should return true for upkeepNeeded", async function () {
                     const { upkeepNeeded } = await subject();
                     expect(upkeepNeeded).to.eq(true);
+                });
+            });
+
+            describe("When a dca is set with starting time in the future", function () {
+                let interval;
+                const delayInMs = 10**7
+
+                beforeEach(async () => {
+                    const sellAmount = ethers.utils.parseEther("1");
+                    interval = ethers.BigNumber.from(10000);
+                    const blockNum = await ethers.provider.getBlockNumber();
+                    const block = await ethers.provider.getBlock(blockNum);
+                    const startTimestamp = block.timestamp + delayInMs;
+                    await trickle.setDcaWithStartTimestamp(wethAddress, daiAddress, sellAmount, interval, startTimestamp);
+                });
+
+                it("should return false for upkeepNeeded", async function () {
+                    const { upkeepNeeded } = await subject();
+                    expect(upkeepNeeded).to.eq(false);
                 });
             });
         });
