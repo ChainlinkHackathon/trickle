@@ -6,11 +6,16 @@
 const hre = require("hardhat");
 const fs = require("fs");
 
-const UPDATE_INTERVAL = 10;
+const MINIMUM_UPDATE_INTERVAL = 10;
 
-const contractsToDeploy = [
-    { name: "Counter", constructorArgs: [UPDATE_INTERVAL] },
-];
+const contractsToDeploy = [{ name: "Trickle", constructorArgs: [MINIMUM_UPDATE_INTERVAL] }];
+const addressPath = `./front_end/src/chain-info/map.json`;
+
+function getAddresses() {
+    let addresses = {};
+    if (fs.existsSync(addressPath)) addresses = JSON.parse(fs.readFileSync(addressPath, "utf8"));
+    return addresses;
+}
 
 async function deployContract({ name, constructorArgs }) {
     console.log("Getting Contract Factory");
@@ -27,11 +32,9 @@ async function deployContract({ name, constructorArgs }) {
 }
 
 async function saveAddress(name, address) {
-    const addressPath = `./front_end/src/chain-info/map.json`;
-    let addresses = {};
-    const { chainId } = await ethers.provider.getNetwork();
-    if (fs.existsSync(addressPath)) addresses = JSON.parse(fs.readFileSync(addressPath, "utf8"));
+    const addresses = getAddresses();
 
+    const { chainId } = await ethers.provider.getNetwork();
     if (addresses[chainId] == null) {
         addresses[chainId] = {};
     }
@@ -48,7 +51,17 @@ function saveAbi(name, interface) {
 }
 
 async function main() {
-    for(const contractData of contractsToDeploy){
+    for (const contractData of contractsToDeploy) {
+        if (contractData.name == "Trickle") {
+            const addresses = getAddresses();
+            const { chainId } = await ethers.provider.getNetwork();
+            const sushiSwapAddress = addresses[chainId]?.SushiSwap;
+            if (sushiSwapAddress) {
+                contractData.constructorArgs.push(sushiSwapAddress);
+            } else {
+                throw Error("Sushiswap address not provided");
+            }
+        }
         await deployContract(contractData);
     }
 }
