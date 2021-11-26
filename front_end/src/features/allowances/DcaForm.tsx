@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { SliderInput } from "../../components";
+import { TextField } from "@material-ui/core";
 import { useEthers, useTokenBalance, useNotifications } from "@usedapp/core";
 import { formatUnits } from "@ethersproject/units";
 import {
@@ -50,17 +51,20 @@ export const DcaForm = ({ token }: DcaFormProps) => {
         ? parseFloat(formatUnits(tokenBalance, 18))
         : 0;
 
-    const handleDcaSubmit = () => {
+    const handleDcaSubmit = async () => {
         const amountAsWei = utils.parseEther(amount.toString());
-        return setDcaSend(
+        return await setDcaSend(
             tokenAddress,
             buyToken,
-            amountAsWei.toString(),
-            interval.toString()
+            amountAsWei,
+            interval
         );
     };
 
-    const [buyToken, setBuyToken] = useState<string>("");
+    const [buyToken, setBuyToken] = useState<string>("0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789");
+    const handleBuyTokenChange = (event: any) => {
+        setBuyToken(event.target.value);
+    };
 
     const [amount, setAmount] = useState<
         number | string | Array<number | string>
@@ -110,6 +114,18 @@ export const DcaForm = ({ token }: DcaFormProps) => {
 
     return (
         <>
+            <div className={classes.container}>
+                <TextField
+                    id={`buyToken-input`}
+                    className={classes.slider}
+                    value={buyToken}
+                    margin="dense"
+                    onChange={handleBuyTokenChange}
+                    inputProps={{
+                        type: "string",
+                    }}
+                />
+            </div>
             <div className={classes.container}>
                 <SliderInput
                     label={`DCA Amount: ${name}`}

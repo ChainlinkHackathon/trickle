@@ -48,6 +48,7 @@ export const WalletBalance = ({ token }: WalletBalanceProps) => {
     });
     async function approveMax() {
         console.log("Approving Max");
+        console.log("Token address: ", tokenContract.address);
         await send(spenderAddress, constants.MaxUint256);
         console.log("Transaction status: ", state);
     }
