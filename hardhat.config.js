@@ -2,6 +2,8 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 const fs = require("fs");
 
+TIMEOUT = 100000;
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -74,7 +76,10 @@ module.exports = {
             forking: {
                 url: `${KOVAN_JSON_RPC_URL}`,
             },
-            timeout: 50000,
+            timeout: TIMEOUT,
+        },
+        localhost: {
+            timeout: TIMEOUT,
         },
         kovan: {
             url: `${KOVAN_JSON_RPC_URL}`,
@@ -85,5 +90,5 @@ module.exports = {
         sources: "./contracts",
         tests: "./test",
     },
-    mocha: { timeout: 50000 },
+    mocha: { timeout: TIMEOUT },
 };
