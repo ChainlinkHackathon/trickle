@@ -75,5 +75,6 @@ describe("ExchangeAdapter", function () {
             expect(wethBalanceBefore.sub(wethBalanceAfter)).to.eq(wethAmount);
             expect(daiBalanceAfter.gt(daiBalanceBefore));
         });
+
     });
 });
