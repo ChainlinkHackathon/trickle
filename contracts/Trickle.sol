@@ -173,6 +173,28 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     }
 
     /**
+     * Delete a given recurring order
+     *
+     * @param _tokenPairHash    Hash of sell and buyToken addresses identifying the tokenPair.
+     * @param _orderHash        Hash of remaining order data (user address, amount, interval)
+     *
+     */
+    function deleteRecurringOrder(bytes32 _tokenPairHash, bytes32 _orderHash)
+        external
+    {
+        TokenPair storage tokenPair = tokenPairs[_tokenPairHash];
+        require(
+            tokenPair.registeredOrders.contains(_orderHash),
+            "ORDER TO DELETE DOES NOT EXIST"
+        );
+        require(
+            tokenPair.orders[_orderHash].user == msg.sender,
+            "CANNOT DELETE ORDER OF DIFFERENT USER"
+        );
+        tokenPair.registeredOrders.remove(_orderHash);
+    }
+
+    /**
      * Utility function for frontend to get data on a given order
      *
      * @param _tokenPairHash    Hash of sell and buyToken addresses identifying the tokenPair.
@@ -187,6 +209,10 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         returns (RecurringOrder memory)
     {
         TokenPair storage tokenPair = tokenPairs[_tokenPairHash];
+        require(
+            tokenPair.registeredOrders.contains(_orderHash),
+            "ORDER DOES NOT EXIST"
+        );
         return tokenPair.orders[_orderHash];
     }
 
@@ -348,14 +374,29 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         TokenPairPendingOrders memory pendingOrders
     ) internal {
         if (pendingOrders.orders.length == 0) return;
+        if (!initializedTokenPairs.contains(pendingOrders.tokenPairHash))
+            return;
 
         TokenPair storage tokenPair = tokenPairs[pendingOrders.tokenPairHash];
         IERC20 sellToken = IERC20(tokenPair.sellToken);
         IERC20 buyToken = IERC20(tokenPair.buyToken);
+
         for (uint256 i; i < pendingOrders.orders.length; i++) {
             bytes32 orderHash = pendingOrders.orders[i];
+
+            // ZeroHash signals last order to be executed
             if (orderHash == bytes32(0)) break;
+            // Check that order is registered / not deleted
+            if (!tokenPair.registeredOrders.contains(orderHash)) break;
+
             RecurringOrder storage recurringOrder = tokenPair.orders[orderHash];
+
+            //Check that order is actually ready to be excuted
+            if (
+                block.timestamp <=
+                (recurringOrder.lastExecution + recurringOrder.interval)
+            ) break; 
+
             uint256 sellAmount = recurringOrder.sellAmount;
             address user = recurringOrder.user;
             bool success = swapExactTokensForTokens(

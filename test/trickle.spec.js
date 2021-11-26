@@ -84,6 +84,53 @@ describe("Trickle", function () {
                 });
             });
         });
+        context("#deleteRecurringOrder", function () {
+            let sellAmount;
+            let interval;
+            let tokenPairHash;
+            let orderHash;
+            let user;
+
+            beforeEach(async () => {
+                sellAmount = ethers.utils.parseEther("1");
+                interval = ethers.BigNumber.from(10000);
+                await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
+                [tokenPairHash] = await trickle.getTokenPairs(owner.address);
+                [orderHash] = await trickle.getOrders(owner.address, tokenPairHash);
+                user = owner;
+            });
+
+            async function subject() {
+                const result = await trickle.connect(user).deleteRecurringOrder(tokenPairHash, orderHash);
+                return result;
+            }
+
+            describe("When given order exists", async function () {
+                it("Should not revert", async function () {
+                    await subject();
+                });
+            });
+
+            describe("When given order does not exists", async function () {
+                beforeEach(async () => {
+                    orderHash = ethers.utils.formatBytes32String("RANDOMTEXT");
+                });
+
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("ORDER TO DELETE DOES NOT EXIST");
+                });
+            });
+
+            describe("When trying to delete order of different user", async function () {
+                beforeEach(async () => {
+                    ([owner, user] = await ethers.getSigners());
+                });
+
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("CANNOT DELETE ORDER OF DIFFERENT USER");
+                });
+            });
+        });
         context("#setRecurringOrderWithStartTimestamp", function () {
             let sellAmount;
             let interval;
@@ -263,15 +310,13 @@ describe("Trickle", function () {
                 });
             });
 
-            describe("When querying non-existign order", function () {
+            describe("When querying non-existing order", function () {
                 beforeEach(async () => {
                     orderHash = ethers.utils.formatBytes32String("RANDOMTEXT");
                 });
 
-                it("Should return data with zero fields", async function () {
-                    const orderData = await subject();
-                    expect(orderData.sellAmount).to.eq(ethers.BigNumber.from(0));
-                    expect(orderData.interval).to.eq(ethers.BigNumber.from(0));
+                it("Should revert", async function () {
+                    await expect(subject()).to.be.revertedWith("ORDER DOES NOT EXIST");
                 });
             });
         });
@@ -376,6 +421,21 @@ describe("Trickle", function () {
                     });
                 });
                 context("when no sellToken is approved", function () {
+                    it("should consume zero amount of sell token", async function () {
+                        const wethBalanceBefore = await weth.balanceOf(owner.address);
+                        await subject();
+                        const wethBalanceAfter = await weth.balanceOf(owner.address);
+                        expect(wethBalanceBefore).to.eq(wethBalanceAfter);
+                    });
+                });
+
+                context("when order is deleted before upkeep is performed", function () {
+                    beforeEach(async () => {
+                        const [tokenPairHash] = await trickle.getTokenPairs(owner.address);
+                        const [orderHash] = await trickle.getOrders(owner.address, tokenPairHash);
+                        await trickle.deleteRecurringOrder(tokenPairHash, orderHash);
+                    });
+
                     it("should consume zero amount of sell token", async function () {
                         const wethBalanceBefore = await weth.balanceOf(owner.address);
                         await subject();
