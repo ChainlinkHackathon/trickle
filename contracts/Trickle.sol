@@ -93,13 +93,13 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     * @param _interval         Interval of execution in ms
     *
     */
-    function setDca(
+    function setRecurringOrder(
         address _sellToken,
         address _buyToken,
         uint256 _sellAmount,
         uint256 _interval
     ) public {
-        setDcaWithStartTimestamp(
+        setRecurringOrderWithStartTimestamp(
             _sellToken,
             _buyToken,
             _sellAmount,
@@ -118,7 +118,7 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     * @param _startTimestamp   Block timestamp from which to start the execution of this order
     *
     */
-    function setDcaWithStartTimestamp(
+    function setRecurringOrderWithStartTimestamp(
         address _sellToken,
         address _buyToken,
         uint256 _sellAmount,

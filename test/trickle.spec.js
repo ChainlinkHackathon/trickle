@@ -48,7 +48,7 @@ describe("Trickle", function () {
             daiAddress = ethers.utils.getAddress(networkMapping[String(chainId)].Dai);
         });
 
-        context("#setDca", function () {
+        context("#setRecurringOrder", function () {
             let sellAmount;
             let interval;
 
@@ -58,7 +58,7 @@ describe("Trickle", function () {
             });
 
             async function subject() {
-                const result = await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                const result = await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                 return result;
             }
 
@@ -84,7 +84,7 @@ describe("Trickle", function () {
                 });
             });
         });
-        context("#setDcaWithStartTimestamp", function () {
+        context("#setRecurringOrderWithStartTimestamp", function () {
             let sellAmount;
             let interval;
             let startTimestamp;
@@ -99,7 +99,7 @@ describe("Trickle", function () {
             });
 
             async function subject() {
-                const result = await trickle.setDcaWithStartTimestamp(
+                const result = await trickle.setRecurringOrderWithStartTimestamp(
                     wethAddress,
                     daiAddress,
                     sellAmount,
@@ -142,7 +142,7 @@ describe("Trickle", function () {
                 return await trickle.getTokenPairs(user);
             }
 
-            describe("When no dca is set", async function () {
+            describe("When no recurringOrder is set", async function () {
                 beforeEach(async () => {
                     interval = minimumUpkeepInterval.div(2);
                 });
@@ -152,11 +152,11 @@ describe("Trickle", function () {
                 });
             });
 
-            describe("When a dca is set", async function () {
+            describe("When a recurringOrder is set", async function () {
                 beforeEach(async () => {
                     const sellAmount = ethers.utils.parseEther("1");
                     const interval = ethers.BigNumber.from(10000000);
-                    await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                    await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                 });
 
                 it("Should return list of length 1", async function () {
@@ -173,7 +173,7 @@ describe("Trickle", function () {
                 user = owner.address;
                 const sellAmount = ethers.utils.parseEther("1");
                 const interval = ethers.BigNumber.from(10000000);
-                await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                 [tokenPairHash] = await trickle.getTokenPairs(user);
             });
 
@@ -207,7 +207,7 @@ describe("Trickle", function () {
                 user = owner.address;
                 const sellAmount = ethers.utils.parseEther("1");
                 const interval = ethers.BigNumber.from(10000000);
-                await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                 [tokenPairHash] = await trickle.getTokenPairs(owner.address);
             });
 
@@ -215,14 +215,14 @@ describe("Trickle", function () {
                 return await trickle.getOrders(user, tokenPairHash);
             }
 
-            describe("When specifing a user with a dca set", function () {
+            describe("When specifing a user with a recurringOrder set", function () {
                 it("Should return list of length 1", async function () {
                     const orderHashList = await subject();
                     expect(orderHashList.length).to.eq(1);
                 });
             });
 
-            describe("When specifing a user without any dca set", function () {
+            describe("When specifing a user without any recurringOrder set", function () {
                 beforeEach(async () => {
                     [_, otherAccount] = await ethers.getSigners();
                     user = otherAccount.address;
@@ -246,7 +246,7 @@ describe("Trickle", function () {
                 user = owner.address;
                 sellAmount = ethers.utils.parseEther("1");
                 interval = ethers.BigNumber.from(10000000);
-                await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                 [tokenPairHash] = await trickle.getTokenPairs(owner.address);
                 [orderHash] = await trickle.getOrders(user, tokenPairHash);
             });
@@ -286,20 +286,20 @@ describe("Trickle", function () {
                 return await trickle.checkUpkeep(callData);
             }
 
-            describe("When no dca is set", function () {
+            describe("When no recurringOrder is set", function () {
                 it("should return false for upkeepNeeded", async function () {
                     const { upkeepNeeded } = await subject();
                     expect(upkeepNeeded).to.eq(false);
                 });
             });
 
-            describe("When a dca is set", function () {
+            describe("When a recurringOrder is set", function () {
                 let interval;
 
                 beforeEach(async () => {
                     const sellAmount = ethers.utils.parseEther("1");
                     interval = ethers.BigNumber.from(10000);
-                    await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                    await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                 });
 
                 it("should return true for upkeepNeeded", async function () {
@@ -308,7 +308,7 @@ describe("Trickle", function () {
                 });
             });
 
-            describe("When a dca is set with starting time in the future", function () {
+            describe("When a recurringOrder is set with starting time in the future", function () {
                 let interval;
                 const delayInMs = 10 ** 7;
 
@@ -318,7 +318,7 @@ describe("Trickle", function () {
                     const blockNum = await ethers.provider.getBlockNumber();
                     const block = await ethers.provider.getBlock(blockNum);
                     const startTimestamp = block.timestamp + delayInMs;
-                    await trickle.setDcaWithStartTimestamp(
+                    await trickle.setRecurringOrderWithStartTimestamp(
                         wethAddress,
                         daiAddress,
                         sellAmount,
@@ -341,7 +341,7 @@ describe("Trickle", function () {
                 return await trickle.performUpkeep(performData);
             }
 
-            describe("When a dca is set", function () {
+            describe("When a recurringOrder is set", function () {
                 let interval;
                 let weth;
                 let dai;
@@ -353,7 +353,7 @@ describe("Trickle", function () {
                     callData = ethers.utils.hexlify(0);
                     weth = await ethers.getContractAt("IWETH", wethAddress);
                     dai = await ethers.getContractAt("IERC20", daiAddress);
-                    await trickle.setDca(wethAddress, daiAddress, sellAmount, interval);
+                    await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
                     ({ performData, upkeepNeeded } = await trickle.checkUpkeep(callData));
                 });
 
