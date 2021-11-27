@@ -2,6 +2,8 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 const fs = require("fs");
 
+TIMEOUT = 100000;
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -57,8 +59,8 @@ task("deposit-weth", "Wrap eth into Weth")
         console.log("Weth is deployed");
 
         const amountWei = ethers.utils.parseEther(taskArgs.amount);
-        const tx = await wethContract.deposit({value: amountWei});
-        const receipt = await tx.wait()
+        const tx = await wethContract.deposit({ value: amountWei });
+        const receipt = await tx.wait();
         console.log(`${taskArgs.amount} Ether wrapped`);
         console.log(receipt);
     });
@@ -68,12 +70,16 @@ task("deposit-weth", "Wrap eth into Weth")
 
 module.exports = {
     solidity: "0.8.4",
-    defaultNetwork: "kovan",
+    defaultNetwork: "hardhat",
     networks: {
         hardhat: {
             forking: {
                 url: `${KOVAN_JSON_RPC_URL}`,
             },
+            timeout: TIMEOUT,
+        },
+        localhost: {
+            timeout: TIMEOUT,
         },
         kovan: {
             url: `${KOVAN_JSON_RPC_URL}`,
@@ -84,4 +90,5 @@ module.exports = {
         sources: "./contracts",
         tests: "./test",
     },
+    mocha: { timeout: TIMEOUT },
 };

@@ -16,3 +16,5 @@ cache
 artifacts
 
 addresses/*
+
+yarn-error.log
