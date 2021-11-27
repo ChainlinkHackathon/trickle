@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { useEthers } from "@usedapp/core";
 import { makeStyles, Box } from "@material-ui/core";
 import { DcaForm } from "./DcaForm";
