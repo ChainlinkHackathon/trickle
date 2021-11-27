@@ -2,14 +2,19 @@ import { useEffect, useState } from "react";
 import { SliderInput } from "../../components";
 import { useEthers, useTokenBalance, useNotifications } from "@usedapp/core";
 import { formatUnits } from "@ethersproject/units";
-import { Button, CircularProgress, Snackbar } from "@material-ui/core";
+import {
+    Button,
+    CircularProgress,
+    Snackbar,
+    TextField,
+    Input,
+} from "@material-ui/core";
 import { Tab, makeStyles, Box } from "@material-ui/core";
 import { Token } from "../Main";
 import { useTrickle } from "../../hooks";
 import { utils } from "ethers";
 import Alert from "@material-ui/lab/Alert";
 import { NormalInput } from "../../components/NormalInput";
-import { TextField } from "@material-ui/core";
 
 // This is the typescript way of saying this compent needs this type
 export interface DcaFormProps {
@@ -84,12 +89,18 @@ export const DcaForm = ({ token }: DcaFormProps) => {
     };
 
     const [amount, setAmount] = useState<
-        number | string | Array<number | string>
+        number 
     >(0);
+    const handleAmountChange = (event: any) => {
+        setAmount(event.target.value);
+    };
 
     const [interval, setInterval] = useState<
         number | string | Array<number | string>
     >(0);
+    const handleIntervalChange = (event: any) => {
+        setInterval(event.target.value);
+    };
 
     const [showErc20ApprovalSuccess, setShowErc20ApprovalSuccess] =
         useState(false);
@@ -133,31 +144,50 @@ export const DcaForm = ({ token }: DcaFormProps) => {
         <>
             <div className={classes.boxWrapper}>
                 <Box className={classes.box}>
-                    {/* <div className={classes.container}> */}
-                    <NormalInput
-                        label={`${name}`}
-                        maxValue={formattedTokenBalance}
-                        id={`amount-slider-input-${name}`}
-                        tokenImgSrc={image}
+                    <TextField
+                        id={`buyToken-input`}
                         className={classes.slider}
-                        value={amount}
-                        onChange={setAmount}
-                        disabled={isMining || hasZeroBalance}
+                        value={buyToken}
+                        margin="dense"
+                        onChange={handleBuyTokenChange}
+                        helperText="Address of Token to Buy"
+                        inputProps={{
+                            type: "string",
+                        }}
                     />
-                    {/* </div> */}
                 </Box>
             </div>
-            <div className={classes.container}>
-                <SliderInput
-                    //   label={'DCA Interval'}
-                    // TODO: week by default add field to change this
-                    maxValue={30}
-                    id={`interval-slider-input-${name}`}
+            <div className={classes.boxWrapper}>
+                <TextField
+                    id={`interval-input`}
+                    className={classes.slider}
+                    value={amount}
+                    onChange={handleAmountChange}
+                    disabled={isMining || hasZeroBalance}
+                    inputProps={{
+                        step: 0.1,
+                        min: 0,
+                        type: "number",
+                    }}
+                    helperText={`Amount of ${name} to sell`}
+                />
+            </div>
+            <div className={classes.boxWrapper}>
+                <TextField
+                    id={`interval-input`}
                     className={classes.slider}
                     value={interval}
-                    onChange={setInterval}
+                    onChange={handleIntervalChange}
                     disabled={isMining || hasZeroBalance}
+                    inputProps={{
+                        step: 1,
+                        min: 0,
+                        type: "number",
+                    }}
+                    helperText="Execution Interval in seconds"
                 />
+            </div>
+            <div className={classes.container}>
                 <Button
                     color="primary"
                     variant="contained"
