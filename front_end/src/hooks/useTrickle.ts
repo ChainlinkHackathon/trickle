@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useContractFunction, useEthers } from "@usedapp/core";
 import abi from "../chain-info/Trickle.json";
-import { utils, constants } from "ethers";
+import { utils, constants, BigNumber } from "ethers";
 import { Contract } from "@ethersproject/contracts";
 import networkMapping from "../chain-info/map.json";
 
@@ -11,13 +11,12 @@ export const useTrickle = () => {
         ? networkMapping[String(chainId)]["Trickle"]
         : constants.AddressZero;
 
-    const trickleInterface = new utils.Interface(abi);
 
     console.log("ADDRESS:", trickleContractAddress);
 
     const trickleContract = new Contract(
         trickleContractAddress,
-        trickleInterface
+        abi
     );
 
     const { send: setDcaSend, state: setDcaState } = useContractFunction(
@@ -28,22 +27,18 @@ export const useTrickle = () => {
         }
     );
 
-    const [amountToDca, setAmountToDca] = useState("0");
-    const [dcaInterval, setDcaInterval] = useState("0");
-
-    const send = (
+    const send = async (
         sellToken: string,
         buyToken: string,
-        amount: string,
-        interval: string
+        amount: BigNumber,
+        interval: number | string | Array<number | string>
     ) => {
-        setAmountToDca(amount);
-        setDcaInterval(interval);
         console.log("dcaInterval:", interval);
         console.log("amount:", amount);
         console.log("sellToken:", sellToken);
         console.log("buyToken:", buyToken);
-        return setDcaSend(sellToken, buyToken, amountToDca, dcaInterval);
+        await setDcaSend(sellToken, buyToken, amount, interval);
+        console.log("State:", setDcaState);
     };
 
     const [state, setState] = useState(setDcaState);
