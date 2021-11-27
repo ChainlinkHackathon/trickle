@@ -9,16 +9,13 @@ import {
     TextField,
     Input,
 } from "@material-ui/core";
-import { Tab, makeStyles, Box } from "@material-ui/core";
-import { Token } from "../Main";
+import { makeStyles, Box } from "@material-ui/core";
 import { useTrickle } from "../../hooks";
 import { utils } from "ethers";
 import Alert from "@material-ui/lab/Alert";
-import { NormalInput } from "../../components/NormalInput";
 
 // This is the typescript way of saying this compent needs this type
 export interface DcaFormProps {
-    token: Token;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -56,30 +53,37 @@ const useStyles = makeStyles((theme) => ({
 // token is getting passed in as a prop
 // in the ping brackets is an object/variable
 // That object is of the shape DcaFormProps
-export const DcaForm = ({ token }: DcaFormProps) => {
-    const { image, address: tokenAddress, name } = token;
+export const DcaForm = () => {
 
     const { account } = useEthers();
-    const tokenBalance = useTokenBalance(tokenAddress, account);
     const { notifications } = useNotifications();
 
     const classes = useStyles();
 
     const { send: setDcaSend, state: setDcaState } = useTrickle();
 
-    const formattedTokenBalance: number = tokenBalance
-        ? parseFloat(formatUnits(tokenBalance, 18))
-        : 0;
-
     const handleDcaSubmit = () => {
         const amountAsWei = utils.parseEther(amount.toString());
         return setDcaSend(
-            tokenAddress,
+            sellToken,
             buyToken,
             amountAsWei,
             interval.toString()
         );
     };
+
+    const [sellToken, setSellToken] = useState<string>(
+        "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789"
+    );
+    const handleSellTokenChange = (event: any) => {
+        setSellToken(event.target.value);
+    };
+
+    const tokenBalance = useTokenBalance(sellToken, account);
+    const formattedTokenBalance: number = tokenBalance
+        ? parseFloat(formatUnits(tokenBalance, 18))
+        : 0;
+
 
     const [buyToken, setBuyToken] = useState<string>(
         "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789"
@@ -145,6 +149,21 @@ export const DcaForm = ({ token }: DcaFormProps) => {
             <div className={classes.boxWrapper}>
                 <Box className={classes.box}>
                     <TextField
+                        id={`sellToken-input`}
+                        className={classes.slider}
+                        value={sellToken}
+                        margin="dense"
+                        onChange={handleSellTokenChange}
+                        helperText="Address of Token to Sell"
+                        inputProps={{
+                            type: "string",
+                        }}
+                    />
+                </Box>
+            </div>
+            <div className={classes.boxWrapper}>
+                <Box className={classes.box}>
+                    <TextField
                         id={`buyToken-input`}
                         className={classes.slider}
                         value={buyToken}
@@ -169,7 +188,7 @@ export const DcaForm = ({ token }: DcaFormProps) => {
                         min: 0,
                         type: "number",
                     }}
-                    helperText={`Amount of ${name} to sell`}
+                    helperText={`Amount of sell token to spend`}
                 />
             </div>
             <div className={classes.boxWrapper}>
