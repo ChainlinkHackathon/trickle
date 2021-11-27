@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useContractFunction, useEthers } from "@usedapp/core";
-import Trickle from "../chain-info/Trickle.json";
+import abi from "../chain-info/Trickle.json";
 import { utils, constants } from "ethers";
 import { Contract } from "@ethersproject/contracts";
 import networkMapping from "../chain-info/map.json";
 
 export const useTrickle = () => {
     const { chainId } = useEthers();
-    const { abi } = Trickle;
     const trickleContractAddress = chainId
         ? networkMapping[String(chainId)]["Trickle"]
         : constants.AddressZero;
