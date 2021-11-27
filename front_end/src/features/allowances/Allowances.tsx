@@ -32,11 +32,6 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
     // Could do it without <number>
     // saving state between renders of components
     // You'd have to pass it through as a prop to have another component use it
-    const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0);
-
-    const handleChange = (event: React.ChangeEvent<{}>, newValue: string) => {
-        setSelectedTokenIndex(parseInt(newValue));
-    };
 
     const { account } = useEthers();
 

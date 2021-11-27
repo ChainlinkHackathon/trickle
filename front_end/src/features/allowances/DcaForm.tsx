@@ -7,11 +7,10 @@ import {
     CircularProgress,
     Snackbar,
     TextField,
-    InputLabel,
     Select,
     MenuItem,
 } from "@material-ui/core";
-import { makeStyles, Box } from "@material-ui/core";
+import { makeStyles} from "@material-ui/core";
 import { useTrickle } from "../../hooks";
 import { utils } from "ethers";
 import Alert from "@material-ui/lab/Alert";
