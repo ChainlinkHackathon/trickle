@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { SliderInput } from "../../components";
+import { Token } from "../Main";
 import { useEthers, useTokenBalance, useNotifications } from "@usedapp/core";
 import { formatUnits } from "@ethersproject/units";
 import {
@@ -7,15 +7,20 @@ import {
     CircularProgress,
     Snackbar,
     TextField,
-    Input,
+    InputLabel,
+    Select,
+    MenuItem,
 } from "@material-ui/core";
 import { makeStyles, Box } from "@material-ui/core";
 import { useTrickle } from "../../hooks";
 import { utils } from "ethers";
 import Alert from "@material-ui/lab/Alert";
+import FormHelperText from "@mui/material/FormHelperText";
+import FormControl from "@mui/material/FormControl";
 
 // This is the typescript way of saying this compent needs this type
 export interface DcaFormProps {
+    supportedTokens: Array<Token>;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -53,8 +58,7 @@ const useStyles = makeStyles((theme) => ({
 // token is getting passed in as a prop
 // in the ping brackets is an object/variable
 // That object is of the shape DcaFormProps
-export const DcaForm = () => {
-
+export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
     const { account } = useEthers();
     const { notifications } = useNotifications();
 
@@ -84,7 +88,6 @@ export const DcaForm = () => {
         ? parseFloat(formatUnits(tokenBalance, 18))
         : 0;
 
-
     const [buyToken, setBuyToken] = useState<string>(
         "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789"
     );
@@ -92,9 +95,7 @@ export const DcaForm = () => {
         setBuyToken(event.target.value);
     };
 
-    const [amount, setAmount] = useState<
-        number 
-    >(0);
+    const [amount, setAmount] = useState<number>(0);
     const handleAmountChange = (event: any) => {
         setAmount(event.target.value);
     };
@@ -147,34 +148,37 @@ export const DcaForm = () => {
     return (
         <>
             <div className={classes.boxWrapper}>
-                <Box className={classes.box}>
-                    <TextField
-                        id={`sellToken-input`}
-                        className={classes.slider}
+                <FormControl sx={{ m: 1, minWidth: 120 }}>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
                         value={sellToken}
-                        margin="dense"
+                        label="Sell Token"
                         onChange={handleSellTokenChange}
-                        helperText="Address of Token to Sell"
-                        inputProps={{
-                            type: "string",
-                        }}
-                    />
-                </Box>
+                    >
+                        {supportedTokens.map((token) => {
+                            return (
+                                <MenuItem value={token.address}>
+                                    {token.name}
+                                </MenuItem>
+                            );
+                        })}
+                    </Select>
+                    <FormHelperText>Token to spend</FormHelperText>
+                </FormControl>
             </div>
             <div className={classes.boxWrapper}>
-                <Box className={classes.box}>
-                    <TextField
-                        id={`buyToken-input`}
-                        className={classes.slider}
-                        value={buyToken}
-                        margin="dense"
-                        onChange={handleBuyTokenChange}
-                        helperText="Address of Token to Buy"
-                        inputProps={{
-                            type: "string",
-                        }}
-                    />
-                </Box>
+                <TextField
+                    id={`buyToken-input`}
+                    className={classes.slider}
+                    value={buyToken}
+                    margin="dense"
+                    onChange={handleBuyTokenChange}
+                    helperText="Address of Token to Buy"
+                    inputProps={{
+                        type: "string",
+                    }}
+                />
             </div>
             <div className={classes.boxWrapper}>
                 <TextField

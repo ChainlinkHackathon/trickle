@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useEthers } from "@usedapp/core";
 import { makeStyles, Box } from "@material-ui/core";
 import { DcaForm } from "./DcaForm";
+import { OrderTable } from "./OrderTable";
 import { ConnectionRequiredMsg } from "../../components";
 import { Token } from "../Main";
 
@@ -50,7 +51,19 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
                 <div>
                     {isConnected ? (
                         <div className={classes.tabContent}>
-                            <DcaForm />
+                            <DcaForm supportedTokens={supportedTokens}/>
+                        </div>
+                    ) : (
+                        <ConnectionRequiredMsg />
+                    )}
+                </div>
+            </Box>
+            <h1 className={classes.header}>Existing Orders</h1>
+            <Box className={classes.box}>
+                <div>
+                    {isConnected ? (
+                        <div className={classes.tabContent}>
+                            <OrderTable/>
                         </div>
                     ) : (
                         <ConnectionRequiredMsg />
