@@ -1,55 +1,53 @@
-import React, { useState } from "react"
-import { useEthers } from "@usedapp/core"
-import { Tab, makeStyles, Box } from "@material-ui/core"
-import { TabContext, TabList, TabPanel } from "@material-ui/lab"
-import { DcaForm } from './DcaForm'
-import {
-  ConnectionRequiredMsg
-} from "../../components"
-import { Token } from "../Main"
-import { WalletBalance } from "./WalletBalance"
+import React, { useState } from 'react';
+import { useEthers } from '@usedapp/core';
+import { Tab, makeStyles, Box } from '@material-ui/core';
+import { TabContext, TabList, TabPanel } from '@material-ui/lab';
+import { DcaForm } from './DcaForm';
+import { ConnectionRequiredMsg } from '../../components';
+import { Token } from '../Main';
+import { WalletBalance } from './WalletBalance';
 
 interface AllowancesProps {
-  supportedTokens: Array<Token>
+  supportedTokens: Array<Token>;
 }
 
 const useStyles = makeStyles((theme) => ({
   tabContent: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: theme.spacing(4),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(4)
   },
   box: {
-    backgroundColor: "white",
-    borderRadius: "25px",
+    backgroundColor: 'white',
+    borderRadius: '25px'
   },
   header: {
-    color: "white"
+    color: 'white'
   }
-}))
+}));
 
 export const Allowances = ({ supportedTokens }: AllowancesProps) => {
-  // wtf is this? 
-  // Reacts way of holding state between components 
-  // Could do it without <number> 
-  // saving state between renders of components 
-  // You'd have to pass it through as a prop to have another component use it 
-  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0)
+  // wtf is this?
+  // Reacts way of holding state between components
+  // Could do it without <number>
+  // saving state between renders of components
+  // You'd have to pass it through as a prop to have another component use it
+  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: string) => {
-    setSelectedTokenIndex(parseInt(newValue))
-  }
+    setSelectedTokenIndex(parseInt(newValue));
+  };
 
-  const { account } = useEthers()
+  const { account } = useEthers();
 
-  const isConnected = account !== undefined
+  const isConnected = account !== undefined;
 
-  const classes = useStyles()
+  const classes = useStyles();
 
   return (
     <Box>
-      <h1 className={classes.header}>Your Wallet</h1>
+      {/* <h1 className={classes.header}>Your Wallet</h1> */}
       <Box className={classes.box}>
         <div>
           {isConnected ? (
@@ -62,20 +60,20 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
                       value={index.toString()}
                       key={index}
                     />
-                  )
+                  );
                 })}
               </TabList>
               {supportedTokens.map((token, index) => {
                 return (
                   <TabPanel value={index.toString()} key={index}>
                     <div className={classes.tabContent}>
-                      <WalletBalance
+                      {/* <WalletBalance
                         token={supportedTokens[selectedTokenIndex]}
-                      />
+                      /> */}
                       <DcaForm token={supportedTokens[selectedTokenIndex]} />
                     </div>
                   </TabPanel>
-                )
+                );
               })}
             </TabContext>
           ) : (
@@ -84,5 +82,5 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
         </div>
       </Box>
     </Box>
-  )
-}
+  );
+};

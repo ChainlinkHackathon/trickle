@@ -12,18 +12,28 @@ interface SliderInputProps {
 }
 
 const useStyles = makeStyles((theme) => ({
+  inputsWrapper: {
+    display: 'flex',
+    justifyContent: 'space-between'
+  },
   inputsContainer: {
+    padding: '0 20px',
     display: 'grid',
     gap: theme.spacing(3),
     gridTemplateRows: 'auto',
     gridTemplateColumns: '1fr auto'
   },
+  tokenImg: {
+    width: '15px',
+    padding: '0 5px'
+  },
   slider: {}
 }));
 
-export const SliderInput = ({
+export const NormalInput = ({
   label = '',
   id = 'input-slider',
+  tokenImgSrc,
   maxValue,
   value,
   onChange,
@@ -46,61 +56,43 @@ export const SliderInput = ({
     }
   };
 
-  const sliderStep = 1;
-  const inputStep = 1;
+  const inputStep = maxValue / 50;
 
   const classes = useStyles();
-
-  const sliderMarks = [
-    {
-      value: 0,
-      label: '0'
-    },
-    {
-      value: maxValue,
-      label: '30'
-    }
-  ];
 
   // ... is a "Spread" operator
   // standard javascript thing
   // works on iterables
   // expands a list
   return (
-    <div {...rest}>
+    <div {...rest} className={classes.inputsWrapper}>
       {label && (
-        <Typography id={id} gutterBottom>
-          {label}
-        </Typography>
+        <div>
+          <Typography id={id} gutterBottom>
+            <img
+              className={classes.tokenImg}
+              src={tokenImgSrc}
+              alt="token logo"
+            />
+            {label}
+          </Typography>
+        </div>
       )}
       <div className={classes.inputsContainer}>
-        <div>
-          <Slider
-            value={typeof value === 'number' ? value : 0}
-            step={sliderStep}
-            onChange={handleSliderChange}
-            aria-labelledby={id}
-            max={maxValue}
-            disabled={disabled}
-            marks={disabled ? [] : sliderMarks}
-          />
-        </div>
-        <div>
-          <Input
-            value={value}
-            margin="dense"
-            onChange={handleInputChange}
-            onBlur={handleBlur}
-            disabled={disabled}
-            inputProps={{
-              step: inputStep,
-              min: 0,
-              max: maxValue,
-              type: 'number',
-              'aria-labelledby': id
-            }}
-          />
-        </div>
+        <Input
+          value={value}
+          margin="dense"
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          disabled={disabled}
+          inputProps={{
+            step: inputStep,
+            min: 0,
+            max: maxValue,
+            type: 'number',
+            'aria-labelledby': id
+          }}
+        />
       </div>
     </div>
   );
