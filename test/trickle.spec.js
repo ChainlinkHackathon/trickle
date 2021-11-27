@@ -246,6 +246,38 @@ describe("Trickle", function () {
                 });
             });
         });
+        context("#getAllOrders", function () {
+            let user;
+            let sellAmount;
+            let interval;
+
+            beforeEach(async () => {
+                user = owner.address;
+                sellAmount = ethers.utils.parseEther("1");
+                interval = ethers.BigNumber.from(10000000);
+                await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
+            });
+
+            async function subject() {
+                return await trickle.getAllOrders(user);
+            }
+
+            describe("When specifing a user with a recurringOrder set", function () {
+                it("Should return list of length 1", async function () {
+                    const orderDetailsList = await subject();
+                    expect(orderDetailsList.length).to.eq(1);
+                });
+                
+                it("Should return correct data", async function () {
+                    const [orderDetails] = await subject();
+                    expect(orderDetails.sellAmount).to.eq(sellAmount);
+                    expect(orderDetails.sellToken).to.eq(wethAddress);
+                    expect(orderDetails.buyToken).to.eq(daiAddress);
+                    expect(orderDetails.lastExecution).to.eq(ethers.BigNumber.from(0));
+                    expect(orderDetails.interval).to.eq(interval);
+                });
+            });
+        })
         context("#getOrders", function () {
             let tokenPairHash;
             let user;
