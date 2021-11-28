@@ -123,7 +123,7 @@ describe("Trickle", function () {
 
             describe("When trying to delete order of different user", async function () {
                 beforeEach(async () => {
-                    ([owner, user] = await ethers.getSigners());
+                    [owner, user] = await ethers.getSigners();
                 });
 
                 it("Should revert", async function () {
@@ -243,6 +243,53 @@ describe("Trickle", function () {
                     const [sellToken, buyToken] = await subject();
                     expect(sellToken).to.eq(ethers.constants.AddressZero);
                     expect(buyToken).to.eq(ethers.constants.AddressZero);
+                });
+            });
+        });
+        context("#getAllOrders", function () {
+            let user;
+            let sellAmount;
+            let interval;
+
+            beforeEach(async () => {
+                user = owner.address;
+                sellAmount = ethers.utils.parseEther("1");
+                interval = ethers.BigNumber.from(10000000);
+                await trickle.setRecurringOrder(wethAddress, daiAddress, sellAmount, interval);
+            });
+
+            async function subject() {
+                return await trickle.getAllOrders(user);
+            }
+
+            describe("When specifing a user with a recurringOrder set", function () {
+                it("Should return list of length 1", async function () {
+                    const orderDetailsList = await subject();
+                    expect(orderDetailsList.length).to.eq(1);
+                });
+
+                it("Should return correct data", async function () {
+                    const [orderDetails] = await subject();
+                    expect(orderDetails.tokenPairHash != null);
+                    expect(orderDetails.sellToken).to.eq(wethAddress);
+                    expect(orderDetails.buyToken).to.eq(daiAddress);
+                    expect(orderDetails.orderHash != null);
+                    expect(orderDetails.sellAmount).to.eq(sellAmount);
+                    expect(orderDetails.lastExecution).to.eq(ethers.BigNumber.from(0));
+                    expect(orderDetails.interval).to.eq(interval);
+                });
+            });
+
+            describe("When deleting the order", function () {
+                beforeEach(async () => {
+                    const [orderDetails] = await subject();
+                    const { tokenPairHash, orderHash } = orderDetails;
+                    await trickle.deleteRecurringOrder(tokenPairHash, orderHash);
+                });
+
+                it("Should return list of length 0", async function () {
+                    const orderDetailsList = await subject();
+                    expect(orderDetailsList.length).to.eq(0);
                 });
             });
         });

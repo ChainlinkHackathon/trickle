@@ -41,6 +41,16 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
         bytes32[] orders;
     }
 
+    struct OrderDetails {
+        bytes32 tokenPairHash;
+        address sellToken;
+        address buyToken;
+        bytes32 orderHash;
+        uint256 sellAmount;
+        uint256 lastExecution;
+        uint256 interval;
+    }
+
     /* ============ Events ========== */
     event TokenPairCreated(address sellToken, address buyToken);
 
@@ -192,6 +202,11 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
             "CANNOT DELETE ORDER OF DIFFERENT USER"
         );
         tokenPair.registeredOrders.remove(_orderHash);
+        userToOrderHash[msg.sender][_tokenPairHash].remove(_orderHash);
+        if(userToOrderHash[msg.sender][_tokenPairHash].length() == 0){
+            userToTokenPairList[msg.sender].remove(_tokenPairHash);
+        }
+
     }
 
     /**
@@ -214,6 +229,49 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
             "ORDER DOES NOT EXIST"
         );
         return tokenPair.orders[_orderHash];
+    }
+
+    function getAllOrders(address _user)
+        external
+        view
+        returns (OrderDetails[] memory orders)
+    {
+        uint256 numOrders = getNumOrders(_user);
+        orders = new OrderDetails[](numOrders);
+        bytes32[] memory tokenPairHashes = getTokenPairs(_user);
+        uint256 k;
+        for (uint256 i; i < tokenPairHashes.length; i++) {
+            bytes32 tokenPairHash = tokenPairHashes[i];
+            TokenPair storage tokenPair = tokenPairs[tokenPairHash];
+            bytes32[] memory orderHashes = getOrders(_user, tokenPairHash);
+            for (uint256 j; j < orderHashes.length; j++) {
+                bytes32 orderHash = orderHashes[j];
+                RecurringOrder storage recurringOrder = tokenPair.orders[orderHash];
+                OrderDetails memory orderDetails = OrderDetails(
+                    tokenPairHash,
+                    tokenPair.sellToken,
+                    tokenPair.buyToken,
+                    orderHash,
+                    recurringOrder.sellAmount,
+                    recurringOrder.lastExecution,
+                    recurringOrder.interval
+                );
+                orders[k] = orderDetails;
+                k++;
+            }
+        }
+    }
+
+    function getNumOrders(address _user)
+        public
+        view
+        returns (uint256 numOrders)
+    {
+        uint256 numTokenPairs = userToTokenPairList[_user].length();
+        for (uint256 i; i < numTokenPairs; i++) {
+            bytes32 tokenPairHash = userToTokenPairList[_user].at(i);
+            numOrders += userToOrderHash[_user][tokenPairHash].length();
+        }
     }
 
     /**
@@ -243,7 +301,7 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
      *
      */
     function getTokenPairs(address _user)
-        external
+        public
         view
         returns (bytes32[] memory)
     {
@@ -265,7 +323,7 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
      *
      */
     function getOrders(address _user, bytes32 _tokenPairHash)
-        external
+        public
         view
         returns (bytes32[] memory)
     {
@@ -395,7 +453,7 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
             if (
                 block.timestamp <=
                 (recurringOrder.lastExecution + recurringOrder.interval)
-            ) break; 
+            ) break;
 
             uint256 sellAmount = recurringOrder.sellAmount;
             address user = recurringOrder.user;

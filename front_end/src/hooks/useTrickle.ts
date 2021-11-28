@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react";
-import { useContractFunction, useEthers } from "@usedapp/core";
+import { useContractFunction, useContractCall, useEthers } from "@usedapp/core";
 import abi from "../chain-info/Trickle.json";
 import { constants, BigNumber } from "ethers";
 import { Contract } from "@ethersproject/contracts";
 import networkMapping from "../chain-info/map.json";
 
 export const useTrickle = () => {
-    const { chainId } = useEthers();
+    const { chainId, account } = useEthers();
     const trickleContractAddress = chainId
         ? networkMapping[String(chainId)]["Trickle"]
         : constants.AddressZero;
 
-
     console.log("ADDRESS:", trickleContractAddress);
 
-    const trickleContract = new Contract(
-        trickleContractAddress,
-        abi
+    const trickleContract = new Contract(trickleContractAddress, abi);
+    const trickleInterface = trickleContract.interface;
+
+    const { send: deleteOrderSend, state: deleteOrderState } = useContractFunction(
+        trickleContract,
+        "deleteRecurringOrder",
+        {
+            transactionName: "Delete Order",
+        }
     );
 
     const { send: setDcaSend, state: setDcaState } = useContractFunction(
@@ -26,6 +31,18 @@ export const useTrickle = () => {
             transactionName: "Set DCA",
         }
     );
+
+    const orders = useContractCall({
+        abi: trickleInterface,
+        address: trickleContractAddress,
+        method: "getAllOrders",
+        args: [account],
+    });
+
+    useEffect(() => {
+        console.log("Orders", orders);
+        console.log("Contract address:", trickleContractAddress);
+    }, [orders, trickleContractAddress]);
 
     const send = async (
         sellToken: string,
@@ -47,5 +64,5 @@ export const useTrickle = () => {
         setState(setDcaState);
     }, [setDcaState]);
 
-    return { send, state };
+    return { setDcaSend: send, setDcaState: state, orders, deleteOrderSend, deleteOrderState };
 };
