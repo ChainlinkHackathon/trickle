@@ -5,6 +5,7 @@ import {
     useTokenBalance,
     useNotifications,
     useContractFunction,
+    useTokenAllowance,
 } from "@usedapp/core";
 import { formatUnits } from "@ethersproject/units";
 import {
@@ -90,9 +91,21 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
 
     const tokenContract = new Contract(sellToken, ERC20.abi);
 
-    const { state: approveState, send: approveSend } = useContractFunction(tokenContract, "approve", {
-        transactionName: "Approve",
-    });
+    const tokenAllowance = useTokenAllowance(
+        sellToken,
+        account,
+        trickleContractAddress
+    );
+
+    const { state: approveState, send: approveSend } = useContractFunction(
+        tokenContract,
+        "approve",
+        {
+            transactionName: "Approve",
+        }
+    );
+    const isMaxApproved = tokenAllowance ? tokenAllowance.eq(constants.MaxUint256) : false;
+
     const isApprovalMining = approveState.status === "Mining";
 
     async function approveMax() {
@@ -183,17 +196,21 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
                         </Select>
                         <FormHelperText>Token to spend</FormHelperText>
                     </FormControl>
-                    <Button
-                        color="primary"
-                        variant="contained"
-                        onClick={() => approveMax()}
-                    >
-                        {isApprovalMining ? (
-                            <CircularProgress size={26} />
-                        ) : (
-                            "Approve"
-                        )}
-                    </Button>
+                    {!isMaxApproved ? (
+                        <Button
+                            color="primary"
+                            variant="contained"
+                            onClick={() => approveMax()}
+                        >
+                            {isApprovalMining ? (
+                                <CircularProgress size={26} />
+                            ) : (
+                                "Approve"
+                            )}
+                        </Button>
+                    ) : (
+                        ""
+                    )}
                 </div>
             </div>
             <div className={classes.boxWrapper}>
