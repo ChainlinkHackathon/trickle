@@ -1,8 +1,8 @@
 {
-  "name": "defi-tutorial",
+  "name": "trickle",
   "version": "0.1.0",
-  "description": "DeFi Token Staking App",
-  "author": "Patrick Collins and Matt Durkin",
+  "description": "Trickle",
+  "author": "Trickle team",
   "dependencies": {
     "@chainlink/contracts": "^0.0.9",
     "@emotion/react": "^11.7.0",
