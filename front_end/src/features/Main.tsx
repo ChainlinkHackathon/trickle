@@ -91,7 +91,7 @@ export const Main = () => {
           root: classes.title
         }}
       >
-        {/* Trickle */}
+        Trickle
       </Typography>
       <Allowances supportedTokens={supportedTokens} />
       <Snackbar
