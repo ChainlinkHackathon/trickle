@@ -1,15 +1,18 @@
 import { DataGrid } from "@mui/x-data-grid";
 import { useTrickle } from "../../hooks";
 import { useEffect } from "react";
+import { utils } from "ethers";
 
 const columns = [
-    { field: "sellToken", headerName: "Sell Token", width: 130 },
-    { field: "buyToken", headerName: "Buy Token", width: 400 },
+    { field: "sellToken", headerName: "Sell Token", width: 200 },
+    { field: "buyToken", headerName: "Buy Token", width: 200 },
     {
-        field: "sellAmount",
+        field: "sellAmountFormatted",
         headerName: "Amount",
         type: "number",
         width: 90,
+        valueGetter: (params: any) =>
+            utils.formatEther(params.getValue(params.id, "sellAmount")),
     },
     {
         field: "interval",
@@ -18,10 +21,39 @@ const columns = [
         width: 90,
     },
     {
-        field: "lastExecution",
+        field: "lastExecutionFormatted",
         headerName: "Last Execution",
-        type: "number",
+        type: "string",
         width: 90,
+        valueGetter: (params: any) =>{
+            const rawValue = params.getValue(params.id, "lastExecution").toNumber();
+            if(rawValue == 0){
+                return "NONE";
+            }
+            else{
+                const date = new Date(rawValue*1000);
+                return date.toLocaleString();
+            }
+        }
+    },
+    {
+        field: "nextExecution",
+        headerName: "Next Execution",
+        type: "string",
+        width: 90,
+        valueGetter: (params: any) => {
+            const rawValue = params
+                .getValue(params.id, "lastExecution")
+                .add(params.getValue(params.id, "interval")).toNumber()
+            const date = new Date(rawValue*1000);
+            const now = new Date();
+            if(date < now){
+                return "IMMEDIATELY"
+            }
+            else {
+                return date.toLocaleString();
+            }
+        }
     },
 ];
 
