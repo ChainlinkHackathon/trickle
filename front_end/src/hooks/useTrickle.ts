@@ -64,5 +64,5 @@ export const useTrickle = () => {
         setState(setDcaState);
     }, [setDcaState]);
 
-    return { setDcaSend: send, setDcaState: state, orders, deleteOrderSend, deleteOrderState };
+    return { setDcaSend: send, setDcaState: state, orders, deleteOrderSend, deleteOrderState, trickleContractAddress };
 };

@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Token } from "../Main";
-import { useEthers, useTokenBalance, useNotifications } from "@usedapp/core";
+import {
+    useEthers,
+    useTokenBalance,
+    useNotifications,
+    useContractFunction,
+} from "@usedapp/core";
 import { formatUnits } from "@ethersproject/units";
 import {
     Button,
@@ -10,12 +15,13 @@ import {
     Select,
     MenuItem,
 } from "@material-ui/core";
-import { makeStyles} from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import { useTrickle } from "../../hooks";
-import { utils } from "ethers";
+import { constants, utils, Contract } from "ethers";
 import Alert from "@material-ui/lab/Alert";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from "@mui/material/FormControl";
+import ERC20 from "../../chain-info/ERC20.json";
 
 // This is the typescript way of saying this compent needs this type
 export interface DcaFormProps {
@@ -63,7 +69,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
 
     const classes = useStyles();
 
-    const { setDcaSend, setDcaState } = useTrickle();
+    const { setDcaSend, setDcaState, trickleContractAddress } = useTrickle();
 
     const handleDcaSubmit = () => {
         const amountAsWei = utils.parseEther(amount.toString());
@@ -81,6 +87,17 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
     const handleSellTokenChange = (event: any) => {
         setSellToken(event.target.value);
     };
+
+    const tokenContract = new Contract(sellToken, ERC20.abi);
+
+    const { state: approveState, send: approveSend } = useContractFunction(tokenContract, "approve", {
+        transactionName: "Approve",
+    });
+    const isApprovalMining = approveState.status === "Mining";
+
+    async function approveMax() {
+        await approveSend(trickleContractAddress, constants.MaxUint256);
+    }
 
     const tokenBalance = useTokenBalance(sellToken, account);
     const formattedTokenBalance: number = tokenBalance
@@ -147,24 +164,37 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
     return (
         <>
             <div className={classes.boxWrapper}>
-                <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={sellToken}
-                        label="Sell Token"
-                        onChange={handleSellTokenChange}
+                <div className="row">
+                    <FormControl sx={{ m: 1, minWidth: 120 }}>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={sellToken}
+                            label="Sell Token"
+                            onChange={handleSellTokenChange}
+                        >
+                            {supportedTokens.map((token) => {
+                                return (
+                                    <MenuItem value={token.address}>
+                                        {token.name}
+                                    </MenuItem>
+                                );
+                            })}
+                        </Select>
+                        <FormHelperText>Token to spend</FormHelperText>
+                    </FormControl>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        onClick={() => approveMax()}
                     >
-                        {supportedTokens.map((token) => {
-                            return (
-                                <MenuItem value={token.address}>
-                                    {token.name}
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
-                    <FormHelperText>Token to spend</FormHelperText>
-                </FormControl>
+                        {isApprovalMining ? (
+                            <CircularProgress size={26} />
+                        ) : (
+                            "Approve"
+                        )}
+                    </Button>
+                </div>
             </div>
             <div className={classes.boxWrapper}>
                 <TextField
