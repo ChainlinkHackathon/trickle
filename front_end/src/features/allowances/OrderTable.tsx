@@ -1,11 +1,13 @@
 import { DataGrid } from "@mui/x-data-grid";
+import { useTrickle } from "../../hooks";
+import { useEffect } from "react";
 
 const columns = [
     { field: "sellToken", headerName: "Sell Token", width: 130 },
     { field: "buyToken", headerName: "Buy Token", width: 400 },
     {
-        field: "amount",
-        headerName: "amount",
+        field: "sellAmount",
+        headerName: "Amount",
         type: "number",
         width: 90,
     },
@@ -15,33 +17,26 @@ const columns = [
         type: "number",
         width: 90,
     },
-];
-
-const rows = [
     {
-        id: 1,
-        buyToken: "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789",
-        sellToken: "Dai",
-        amount: 35,
-        interval: 1000,
-    },
-    {
-        id: 2,
-        buyToken: "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789",
-        sellToken: "Weth",
-        amount: 10,
-        interval: 1000,
-    },
-    {
-        id: 3,
-        buyToken: "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789",
-        sellToken: "Dai",
-        amount: 45,
-        interval: 1000,
+        field: "lastExecution",
+        headerName: "Last Execution",
+        type: "number",
+        width: 90,
     },
 ];
 
 export function OrderTable() {
+    const { orders } = useTrickle();
+    const rows = orders
+        ? orders[0].map((order: any, i: number) => {
+              return { id: i, ...order };
+          })
+        : [];
+
+    useEffect(() => {
+        console.log("rows", rows);
+    }, [rows]);
+
     return (
         <div style={{ height: 400, width: "100%" }}>
             <DataGrid

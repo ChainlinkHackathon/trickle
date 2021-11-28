@@ -63,7 +63,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
 
     const classes = useStyles();
 
-    const { send: setDcaSend, state: setDcaState } = useTrickle();
+    const { setDcaSend, setDcaState } = useTrickle();
 
     const handleDcaSubmit = () => {
         const amountAsWei = utils.parseEther(amount.toString());
