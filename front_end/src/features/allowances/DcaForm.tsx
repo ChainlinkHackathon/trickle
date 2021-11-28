@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { Token } from "../Main";
 import {
     useEthers,
-    useTokenBalance,
     useNotifications,
     useContractFunction,
     useTokenAllowance,
 } from "@usedapp/core";
-import { formatUnits } from "@ethersproject/units";
 import {
     Button,
     CircularProgress,
@@ -104,18 +102,15 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
             transactionName: "Approve",
         }
     );
-    const isMaxApproved = tokenAllowance ? tokenAllowance.eq(constants.MaxUint256) : false;
+    const isMaxApproved = tokenAllowance
+        ? tokenAllowance.eq(constants.MaxUint256)
+        : false;
 
     const isApprovalMining = approveState.status === "Mining";
 
     async function approveMax() {
         await approveSend(trickleContractAddress, constants.MaxUint256);
     }
-
-    const tokenBalance = useTokenBalance(sellToken, account);
-    const formattedTokenBalance: number = tokenBalance
-        ? parseFloat(formatUnits(tokenBalance, 18))
-        : 0;
 
     const [buyToken, setBuyToken] = useState<string>(
         "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789"
@@ -171,7 +166,6 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
 
     const isMining = setDcaState.status === "Mining";
 
-    const hasZeroBalance = formattedTokenBalance === 0;
     const hasZeroAmountSelected = parseFloat(amount.toString()) === 0;
 
     return (
@@ -232,7 +226,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
                     className={classes.slider}
                     value={amount}
                     onChange={handleAmountChange}
-                    disabled={isMining || hasZeroBalance}
+                    disabled={isMining}
                     inputProps={{
                         step: 0.1,
                         min: 0,
@@ -247,7 +241,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
                     className={classes.slider}
                     value={interval}
                     onChange={handleIntervalChange}
-                    disabled={isMining || hasZeroBalance}
+                    disabled={isMining}
                     inputProps={{
                         step: 1,
                         min: 0,
