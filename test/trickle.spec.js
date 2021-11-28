@@ -123,7 +123,7 @@ describe("Trickle", function () {
 
             describe("When trying to delete order of different user", async function () {
                 beforeEach(async () => {
-                    ([owner, user] = await ethers.getSigners());
+                    [owner, user] = await ethers.getSigners();
                 });
 
                 it("Should revert", async function () {
@@ -267,17 +267,32 @@ describe("Trickle", function () {
                     const orderDetailsList = await subject();
                     expect(orderDetailsList.length).to.eq(1);
                 });
-                
+
                 it("Should return correct data", async function () {
                     const [orderDetails] = await subject();
-                    expect(orderDetails.sellAmount).to.eq(sellAmount);
+                    expect(orderDetails.tokenPairHash != null);
                     expect(orderDetails.sellToken).to.eq(wethAddress);
                     expect(orderDetails.buyToken).to.eq(daiAddress);
+                    expect(orderDetails.orderHash != null);
+                    expect(orderDetails.sellAmount).to.eq(sellAmount);
                     expect(orderDetails.lastExecution).to.eq(ethers.BigNumber.from(0));
                     expect(orderDetails.interval).to.eq(interval);
                 });
             });
-        })
+
+            describe("When deleting the order", function () {
+                beforeEach(async () => {
+                    const [orderDetails] = await subject();
+                    const { tokenPairHash, orderHash } = orderDetails;
+                    await trickle.deleteRecurringOrder(tokenPairHash, orderHash);
+                });
+
+                it("Should return list of length 0", async function () {
+                    const orderDetailsList = await subject();
+                    expect(orderDetailsList.length).to.eq(0);
+                });
+            });
+        });
         context("#getOrders", function () {
             let tokenPairHash;
             let user;

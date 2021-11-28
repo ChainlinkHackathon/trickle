@@ -8,7 +8,7 @@
   "function checkUpkeep(bytes) view returns (bool upkeepNeeded, bytes performData)",
   "function deleteRecurringOrder(bytes32 _tokenPairHash, bytes32 _orderHash)",
   "function exchangeRouter() view returns (address)",
-  "function getAllOrders(address _user) view returns (tuple(address sellToken, address buyToken, uint256 sellAmount, uint256 lastExecution, uint256 interval)[] orders)",
+  "function getAllOrders(address _user) view returns (tuple(bytes32 tokenPairHash, address sellToken, address buyToken, bytes32 orderHash, uint256 sellAmount, uint256 lastExecution, uint256 interval)[] orders)",
   "function getNumOrders(address _user) view returns (uint256 numOrders)",
   "function getOrderData(bytes32 _tokenPairHash, bytes32 _orderHash) view returns (tuple(address user, uint256 sellAmount, uint256 lastExecution, uint256 interval))",
   "function getOrders(address _user, bytes32 _tokenPairHash) view returns (bytes32[])",

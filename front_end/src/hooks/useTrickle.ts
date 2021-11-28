@@ -16,6 +16,14 @@ export const useTrickle = () => {
     const trickleContract = new Contract(trickleContractAddress, abi);
     const trickleInterface = trickleContract.interface;
 
+    const { send: deleteOrderSend, state: deleteOrderState } = useContractFunction(
+        trickleContract,
+        "deleteRecurringOrder",
+        {
+            transactionName: "Delete Order",
+        }
+    );
+
     const { send: setDcaSend, state: setDcaState } = useContractFunction(
         trickleContract,
         "setRecurringOrder",
@@ -56,5 +64,5 @@ export const useTrickle = () => {
         setState(setDcaState);
     }, [setDcaState]);
 
-    return { setDcaSend: send, setDcaState: state, orders };
+    return { setDcaSend: send, setDcaState: state, orders, deleteOrderSend, deleteOrderState };
 };

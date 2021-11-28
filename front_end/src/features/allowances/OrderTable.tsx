@@ -2,6 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useTrickle } from "../../hooks";
 import { useEffect } from "react";
 import { utils } from "ethers";
+import { DeleteButton } from "./DeleteButton"
 
 const columns = [
     { field: "sellToken", headerName: "Sell Token", width: 200 },
@@ -25,16 +26,17 @@ const columns = [
         headerName: "Last Execution",
         type: "string",
         width: 90,
-        valueGetter: (params: any) =>{
-            const rawValue = params.getValue(params.id, "lastExecution").toNumber();
-            if(rawValue == 0){
+        valueGetter: (params: any) => {
+            const rawValue = params
+                .getValue(params.id, "lastExecution")
+                .toNumber();
+            if (rawValue == 0) {
                 return "NONE";
-            }
-            else{
-                const date = new Date(rawValue*1000);
+            } else {
+                const date = new Date(rawValue * 1000);
                 return date.toLocaleString();
             }
-        }
+        },
     },
     {
         field: "nextExecution",
@@ -44,17 +46,24 @@ const columns = [
         valueGetter: (params: any) => {
             const rawValue = params
                 .getValue(params.id, "lastExecution")
-                .add(params.getValue(params.id, "interval")).toNumber()
-            const date = new Date(rawValue*1000);
+                .add(params.getValue(params.id, "interval"))
+                .toNumber();
+            const date = new Date(rawValue * 1000);
             const now = new Date();
-            if(date < now){
-                return "IMMEDIATELY"
-            }
-            else {
+            if (date < now) {
+                return "IMMEDIATELY";
+            } else {
                 return date.toLocaleString();
             }
-        }
+        },
     },
+    {
+        field: "delete",
+        headerName: "Delete",
+        sortable: false,
+        renderCell: DeleteButton,
+    },
+    ,
 ];
 
 export function OrderTable() {

@@ -42,8 +42,10 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
     }
 
     struct OrderDetails {
+        bytes32 tokenPairHash;
         address sellToken;
         address buyToken;
+        bytes32 orderHash;
         uint256 sellAmount;
         uint256 lastExecution;
         uint256 interval;
@@ -200,6 +202,11 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
             "CANNOT DELETE ORDER OF DIFFERENT USER"
         );
         tokenPair.registeredOrders.remove(_orderHash);
+        userToOrderHash[msg.sender][_tokenPairHash].remove(_orderHash);
+        if(userToOrderHash[msg.sender][_tokenPairHash].length() == 0){
+            userToTokenPairList[msg.sender].remove(_tokenPairHash);
+        }
+
     }
 
     /**
@@ -241,8 +248,10 @@ contract Trickle is KeeperCompatibleInterface, ExchangeAdapter {
                 bytes32 orderHash = orderHashes[j];
                 RecurringOrder storage recurringOrder = tokenPair.orders[orderHash];
                 OrderDetails memory orderDetails = OrderDetails(
+                    tokenPairHash,
                     tokenPair.sellToken,
                     tokenPair.buyToken,
+                    orderHash,
                     recurringOrder.sellAmount,
                     recurringOrder.lastExecution,
                     recurringOrder.interval
