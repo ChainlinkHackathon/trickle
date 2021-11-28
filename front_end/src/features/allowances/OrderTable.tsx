@@ -1,8 +1,8 @@
 import { DataGrid } from "@mui/x-data-grid";
 import { useTrickle } from "../../hooks";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { utils } from "ethers";
-import { DeleteButton } from "./DeleteButton"
+import { DeleteButton } from "./DeleteButton";
 
 const columns = [
     { field: "sellToken", headerName: "Sell Token", width: 150 },
@@ -30,7 +30,7 @@ const columns = [
             const rawValue = params
                 .getValue(params.id, "lastExecution")
                 .toNumber();
-            if (rawValue == 0) {
+            if (rawValue === 0) {
                 return "NONE";
             } else {
                 const date = new Date(rawValue * 1000);
@@ -63,16 +63,19 @@ const columns = [
         sortable: false,
         renderCell: DeleteButton,
     },
-    ,
 ];
 
 export function OrderTable() {
     const { orders } = useTrickle();
-    const rows = orders
-        ? orders[0].map((order: any, i: number) => {
-              return { id: i, ...order };
-          })
-        : [];
+    const rows = useMemo(
+        () =>
+            orders
+                ? orders[0].map((order: any, i: number) => {
+                      return { id: i, ...order };
+                  })
+                : [],
+        [orders]
+    );
 
     useEffect(() => {
         console.log("rows", rows);
@@ -82,7 +85,7 @@ export function OrderTable() {
         <div style={{ height: 400, width: "100%" }}>
             <DataGrid
                 rows={rows}
-                columns={columns}
+                columns={columns as any}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
             />
