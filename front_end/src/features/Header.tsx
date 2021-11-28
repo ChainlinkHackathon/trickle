@@ -1,6 +1,5 @@
 import { Button, makeStyles } from '@material-ui/core';
 import { useEthers } from '@usedapp/core';
-import logo from '../assets/logo.png'; // with import
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -26,6 +25,11 @@ export const Header = () => {
 
   const isConnected = account !== undefined;
 
+  const button = {
+    color: '#ffffff',
+    backgroundColor: '#0da5a3'
+  };
+
   return (
     <div className={classes.container}>
       {/* <div className={classes.image}> */}
@@ -34,7 +38,7 @@ export const Header = () => {
       {/* <div className={classes.buttons}> */}
       {isConnected ? (
         <>
-          <Button color="primary" variant="contained">
+          <Button style={button} variant="contained">
             {`${account?.slice(0, 4)}...${account?.slice(-3)}`}
           </Button>
           <Button variant="contained" onClick={deactivate}>

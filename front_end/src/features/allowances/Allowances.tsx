@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
 import { useEthers } from '@usedapp/core';
-import { Tab, makeStyles, Box } from '@material-ui/core';
-import { TabContext, TabList, TabPanel } from '@material-ui/lab';
+import { makeStyles, Box } from '@material-ui/core';
 import { DcaForm } from './DcaForm';
+import { OrderTable } from './OrderTable';
 import { ConnectionRequiredMsg } from '../../components';
 import { Token } from '../Main';
-import { WalletBalance } from './WalletBalance';
 
 interface AllowancesProps {
   supportedTokens: Array<Token>;
@@ -22,6 +20,11 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
     borderRadius: '25px'
   },
+  existingOrderBox: {
+    backgroundColor: 'white',
+    borderRadius: '25px',
+    margin: '0 0 30px 0'
+  },
   header: {
     color: 'white'
   }
@@ -33,11 +36,6 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
   // Could do it without <number>
   // saving state between renders of components
   // You'd have to pass it through as a prop to have another component use it
-  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0);
-
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: string) => {
-    setSelectedTokenIndex(parseInt(newValue));
-  };
 
   const { account } = useEthers();
 
@@ -47,35 +45,25 @@ export const Allowances = ({ supportedTokens }: AllowancesProps) => {
 
   return (
     <Box>
-      {/* <h1 className={classes.header}>Your Wallet</h1> */}
+      <h1 className={classes.header}>Create Recurring Order</h1>
       <Box className={classes.box}>
         <div>
           {isConnected ? (
-            <TabContext value={selectedTokenIndex.toString()}>
-              <TabList onChange={handleChange} aria-label="stake form tabs">
-                {supportedTokens.map((token, index) => {
-                  return (
-                    <Tab
-                      label={token.name}
-                      value={index.toString()}
-                      key={index}
-                    />
-                  );
-                })}
-              </TabList>
-              {supportedTokens.map((token, index) => {
-                return (
-                  <TabPanel value={index.toString()} key={index}>
-                    <div className={classes.tabContent}>
-                      {/* <WalletBalance
-                        token={supportedTokens[selectedTokenIndex]}
-                      /> */}
-                      <DcaForm token={supportedTokens[selectedTokenIndex]} />
-                    </div>
-                  </TabPanel>
-                );
-              })}
-            </TabContext>
+            <div className={classes.tabContent}>
+              <DcaForm supportedTokens={supportedTokens} />
+            </div>
+          ) : (
+            <ConnectionRequiredMsg />
+          )}
+        </div>
+      </Box>
+      <h1 className={classes.header}>Existing Orders</h1>
+      <Box className={classes.existingOrderBox}>
+        <div>
+          {isConnected ? (
+            <div className={classes.tabContent}>
+              <OrderTable />
+            </div>
           ) : (
             <ConnectionRequiredMsg />
           )}

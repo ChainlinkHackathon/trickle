@@ -1,18 +1,25 @@
 import { useEffect, useState } from 'react';
-import { SliderInput } from '../../components';
+import { Token } from '../Main';
 import { useEthers, useTokenBalance, useNotifications } from '@usedapp/core';
 import { formatUnits } from '@ethersproject/units';
-import { Button, CircularProgress, Snackbar } from '@material-ui/core';
-import { Tab, makeStyles, Box } from '@material-ui/core';
-import { Token } from '../Main';
+import {
+  Button,
+  CircularProgress,
+  Snackbar,
+  TextField,
+  Select,
+  MenuItem
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import { useTrickle } from '../../hooks';
 import { utils } from 'ethers';
 import Alert from '@material-ui/lab/Alert';
-import { NormalInput } from '../../components/NormalInput';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControl from '@mui/material/FormControl';
 
 // This is the typescript way of saying this compent needs this type
 export interface DcaFormProps {
-  token: Token;
+  supportedTokens: Array<Token>;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -21,11 +28,24 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: theme.spacing(2),
-    width: '100%'
+    width: '100%',
+    padding: '0 0 28px 0'
+  },
+  addressWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    gap: theme.spacing(2),
+    width: '100%',
+    margin: '10px 0 0 0'
+  },
+  tokenWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'start'
   },
   boxWrapper: {
     display: 'flex',
-    // flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around',
     gap: theme.spacing(2),
@@ -47,43 +67,57 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+const button = {
+  color: '#ffffff',
+  backgroundColor: '#0da5a3'
+};
+
 // token is getting passed in as a prop
 // in the ping brackets is an object/variable
 // That object is of the shape DcaFormProps
-export const DcaForm = ({ token }: DcaFormProps) => {
-  const { image, address: tokenAddress, name } = token;
-
+export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
   const { account } = useEthers();
-  const tokenBalance = useTokenBalance(tokenAddress, account);
   const { notifications } = useNotifications();
 
   const classes = useStyles();
 
   const { send: setDcaSend, state: setDcaState } = useTrickle();
 
+  const handleDcaSubmit = () => {
+    const amountAsWei = utils.parseEther(amount.toString());
+    return setDcaSend(sellToken, buyToken, amountAsWei, interval.toString());
+  };
+
+  const [sellToken, setSellToken] = useState<string>(
+    '0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789'
+  );
+  const handleSellTokenChange = (event: any) => {
+    setSellToken(event.target.value);
+  };
+
+  const tokenBalance = useTokenBalance(sellToken, account);
   const formattedTokenBalance: number = tokenBalance
     ? parseFloat(formatUnits(tokenBalance, 18))
     : 0;
 
-  const handleDcaSubmit = () => {
-    const amountAsWei = utils.parseEther(amount.toString());
-    return setDcaSend(
-      tokenAddress,
-      buyToken,
-      amountAsWei.toString(),
-      interval.toString()
-    );
+  const [buyToken, setBuyToken] = useState<string>(
+    '0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789'
+  );
+  const handleBuyTokenChange = (event: any) => {
+    setBuyToken(event.target.value);
   };
 
-  const [buyToken, setBuyToken] = useState<string>('');
-
-  const [amount, setAmount] = useState<
-    number | string | Array<number | string>
-  >(0);
+  const [amount, setAmount] = useState<number>(0);
+  const handleAmountChange = (event: any) => {
+    setAmount(event.target.value);
+  };
 
   const [interval, setInterval] = useState<
     number | string | Array<number | string>
   >(0);
+  const handleIntervalChange = (event: any) => {
+    setInterval(event.target.value);
+  };
 
   const [showErc20ApprovalSuccess, setShowErc20ApprovalSuccess] =
     useState(false);
@@ -125,35 +159,70 @@ export const DcaForm = ({ token }: DcaFormProps) => {
 
   return (
     <>
-      <div className={classes.boxWrapper}>
-        <Box className={classes.box}>
-          {/* <div className={classes.container}> */}
-          <NormalInput
-            label={`${name}`}
-            maxValue={formattedTokenBalance}
-            id={`amount-slider-input-${name}`}
-            tokenImgSrc={image}
+      <div className={classes.addressWrapper}>
+        <TextField
+          id={`buyToken-input`}
+          className={classes.slider}
+          value={buyToken}
+          margin="dense"
+          onChange={handleBuyTokenChange}
+          helperText="Address of Token to Buy"
+          inputProps={{
+            type: 'string'
+          }}
+        />
+      </div>
+      <div className={classes.tokenWrapper}>
+        <div>
+          <FormControl sx={{ m: 1, minWidth: 120 }}>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={sellToken}
+              label="Sell Token"
+              onChange={handleSellTokenChange}
+            >
+              {supportedTokens.map((token) => {
+                return <MenuItem value={token.address}>{token.name}</MenuItem>;
+              })}
+            </Select>
+            <FormHelperText>Token to spend</FormHelperText>
+          </FormControl>
+        </div>
+        <div>
+          <TextField
+            id={`interval-input`}
             className={classes.slider}
             value={amount}
-            onChange={setAmount}
+            onChange={handleAmountChange}
             disabled={isMining || hasZeroBalance}
+            inputProps={{
+              step: 0.1,
+              min: 0,
+              type: 'number'
+            }}
+            helperText={`Amount of sell token to spend`}
           />
-          {/* </div> */}
-        </Box>
+        </div>
       </div>
-      <div className={classes.container}>
-        <SliderInput
-          //   label={'DCA Interval'}
-          // TODO: week by default add field to change this
-          maxValue={30}
-          id={`interval-slider-input-${name}`}
+      <div className={classes.boxWrapper}>
+        <TextField
+          id={`interval-input`}
           className={classes.slider}
           value={interval}
-          onChange={setInterval}
+          onChange={handleIntervalChange}
           disabled={isMining || hasZeroBalance}
+          inputProps={{
+            step: 1,
+            min: 0,
+            type: 'number'
+          }}
+          helperText="Execution Interval in seconds"
         />
+      </div>
+      <div className={classes.container}>
         <Button
-          color="primary"
+          style={button}
           variant="contained"
           size="large"
           onClick={handleDcaSubmit}
