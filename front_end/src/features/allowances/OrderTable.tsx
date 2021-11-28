@@ -5,8 +5,8 @@ import { utils } from "ethers";
 import { DeleteButton } from "./DeleteButton"
 
 const columns = [
-    { field: "sellToken", headerName: "Sell Token", width: 200 },
-    { field: "buyToken", headerName: "Buy Token", width: 200 },
+    { field: "sellToken", headerName: "Sell Token", width: 150 },
+    { field: "buyToken", headerName: "Buy Token", width: 150 },
     {
         field: "sellAmountFormatted",
         headerName: "Amount",
@@ -25,7 +25,7 @@ const columns = [
         field: "lastExecutionFormatted",
         headerName: "Last Execution",
         type: "string",
-        width: 90,
+        width: 150,
         valueGetter: (params: any) => {
             const rawValue = params
                 .getValue(params.id, "lastExecution")
@@ -42,7 +42,7 @@ const columns = [
         field: "nextExecution",
         headerName: "Next Execution",
         type: "string",
-        width: 90,
+        width: 150,
         valueGetter: (params: any) => {
             const rawValue = params
                 .getValue(params.id, "lastExecution")
@@ -51,7 +51,7 @@ const columns = [
             const date = new Date(rawValue * 1000);
             const now = new Date();
             if (date < now) {
-                return "IMMEDIATELY";
+                return "NOW";
             } else {
                 return date.toLocaleString();
             }
