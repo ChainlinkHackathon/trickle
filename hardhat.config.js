@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 const fs = require("fs");
 
@@ -16,6 +17,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 
 const KOVAN_PRIVATE_KEY = process.env.KOVAN_PRIVATE_KEY;
 const KOVAN_JSON_RPC_URL = process.env.KOVAN_JSON_RPC_URL;
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 task("check-upkeep", "Check upkeep function", async (_, { ethers }) => {
     const addressPath = "addresses/Counter.json";
@@ -91,4 +93,9 @@ module.exports = {
         tests: "./test",
     },
     mocha: { timeout: TIMEOUT },
+    etherscan: {
+        // Your API key for Etherscan
+        // Obtain one at https://etherscan.io/
+        apiKey: ETHERSCAN_API_KEY,
+    },
 };

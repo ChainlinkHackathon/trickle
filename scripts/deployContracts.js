@@ -11,6 +11,10 @@ const MINIMUM_UPDATE_INTERVAL = 10;
 const contractsToDeploy = [{ name: "Trickle", constructorArgs: [MINIMUM_UPDATE_INTERVAL] }];
 const addressPath = `./front_end/src/chain-info/map.json`;
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function getAddresses() {
     let addresses = {};
     if (fs.existsSync(addressPath)) addresses = JSON.parse(fs.readFileSync(addressPath, "utf8"));
@@ -29,6 +33,14 @@ async function deployContract({ name, constructorArgs }) {
     saveAbi(name, contractInstance.interface);
 
     console.log(`${name} deployed to:`, contractInstance.address);
+
+    // Verify on etherscan
+    // Etherscan needs some time to register the new contract
+    await sleep(60 * 1000);
+    await hre.run("verify:verify", {
+        address: contractInstance.address,
+        constructorArguments: constructorArgs,
+    });
 }
 
 async function saveAddress(name, address) {
