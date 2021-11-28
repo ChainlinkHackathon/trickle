@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Token } from "../Main";
-import { useEthers, useTokenBalance, useNotifications } from "@usedapp/core";
-import { formatUnits } from "@ethersproject/units";
+import {
+    useEthers,
+    useNotifications,
+    useContractFunction,
+    useTokenAllowance,
+} from "@usedapp/core";
 import {
     Button,
     CircularProgress,
@@ -10,12 +14,13 @@ import {
     Select,
     MenuItem,
 } from "@material-ui/core";
-import { makeStyles} from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import { useTrickle } from "../../hooks";
-import { utils } from "ethers";
+import { constants, utils, Contract } from "ethers";
 import Alert from "@material-ui/lab/Alert";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from "@mui/material/FormControl";
+import ERC20 from "../../chain-info/ERC20.json";
 
 // This is the typescript way of saying this compent needs this type
 export interface DcaFormProps {
@@ -63,7 +68,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
 
     const classes = useStyles();
 
-    const { setDcaSend, setDcaState } = useTrickle();
+    const { setDcaSend, setDcaState, trickleContractAddress } = useTrickle();
 
     const handleDcaSubmit = () => {
         const amountAsWei = utils.parseEther(amount.toString());
@@ -82,10 +87,30 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
         setSellToken(event.target.value);
     };
 
-    const tokenBalance = useTokenBalance(sellToken, account);
-    const formattedTokenBalance: number = tokenBalance
-        ? parseFloat(formatUnits(tokenBalance, 18))
-        : 0;
+    const tokenContract = new Contract(sellToken, ERC20.abi);
+
+    const tokenAllowance = useTokenAllowance(
+        sellToken,
+        account,
+        trickleContractAddress
+    );
+
+    const { state: approveState, send: approveSend } = useContractFunction(
+        tokenContract,
+        "approve",
+        {
+            transactionName: "Approve",
+        }
+    );
+    const isMaxApproved = tokenAllowance
+        ? tokenAllowance.eq(constants.MaxUint256)
+        : false;
+
+    const isApprovalMining = approveState.status === "Mining";
+
+    async function approveMax() {
+        await approveSend(trickleContractAddress, constants.MaxUint256);
+    }
 
     const [buyToken, setBuyToken] = useState<string>(
         "0xad5ce863ae3e4e9394ab43d4ba0d80f419f61789"
@@ -141,30 +166,46 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
 
     const isMining = setDcaState.status === "Mining";
 
-    const hasZeroBalance = formattedTokenBalance === 0;
     const hasZeroAmountSelected = parseFloat(amount.toString()) === 0;
 
     return (
         <>
             <div className={classes.boxWrapper}>
-                <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={sellToken}
-                        label="Sell Token"
-                        onChange={handleSellTokenChange}
-                    >
-                        {supportedTokens.map((token) => {
-                            return (
-                                <MenuItem value={token.address}>
-                                    {token.name}
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
-                    <FormHelperText>Token to spend</FormHelperText>
-                </FormControl>
+                <div className="row">
+                    <FormControl sx={{ m: 1, minWidth: 120 }}>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={sellToken}
+                            label="Sell Token"
+                            onChange={handleSellTokenChange}
+                        >
+                            {supportedTokens.map((token) => {
+                                return (
+                                    <MenuItem value={token.address}>
+                                        {token.name}
+                                    </MenuItem>
+                                );
+                            })}
+                        </Select>
+                        <FormHelperText>Token to spend</FormHelperText>
+                    </FormControl>
+                    {!isMaxApproved ? (
+                        <Button
+                            color="primary"
+                            variant="contained"
+                            onClick={() => approveMax()}
+                        >
+                            {isApprovalMining ? (
+                                <CircularProgress size={26} />
+                            ) : (
+                                "Approve"
+                            )}
+                        </Button>
+                    ) : (
+                        ""
+                    )}
+                </div>
             </div>
             <div className={classes.boxWrapper}>
                 <TextField
@@ -185,7 +226,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
                     className={classes.slider}
                     value={amount}
                     onChange={handleAmountChange}
-                    disabled={isMining || hasZeroBalance}
+                    disabled={isMining}
                     inputProps={{
                         step: 0.1,
                         min: 0,
@@ -200,7 +241,7 @@ export const DcaForm = ({ supportedTokens }: DcaFormProps) => {
                     className={classes.slider}
                     value={interval}
                     onChange={handleIntervalChange}
-                    disabled={isMining || hasZeroBalance}
+                    disabled={isMining}
                     inputProps={{
                         step: 1,
                         min: 0,
