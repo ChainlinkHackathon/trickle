@@ -1,5 +1,6 @@
 import { Button, makeStyles } from '@material-ui/core';
 import { useEthers } from '@usedapp/core';
+import logo from '../assets/logo.png'; // with import
 
 const useStyles = makeStyles((theme) => ({
   container: {
